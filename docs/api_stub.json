@@ -1,134 +1,20 @@
 {
   "source": "stub",
-  "notice": "STUB. Sample response for GET /agents/state, captured from the working local demo. Same shape as the live endpoint; swap the URL to http://127.0.0.1:8000/agents/state when the score service is running.",
+  "notice": "STUB. Sample response for GET /agents/state in the shape described in person/README.md (the shared contract). Same shape as the live engine endpoint; swap the URL to http://127.0.0.1:8100/agents/state when the engine is running.",
   "oracle_live": true,
-  "updated_at": "2026-09-18T19:20:20Z",
-  "chain_id": 31337,
-  "block": 127,
+  "updated_at": "2026-10-09T13:42:10Z",
   "agents": [
     {
-      "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-      "name": "HonestAgent",
-      "score": 871,
-      "previous_score": 864,
-      "score_delta": 7,
-      "band": "excellent",
-      "previous_band": "excellent",
-      "required_collateral_bps": 2000,
-      "required_collateral_pct": "20%",
-      "previous_required_collateral_bps": 2000,
-      "previous_required_collateral_pct": "20%",
-      "top_factors": [
-        {
-          "feature": "account_age_days",
-          "value": 729.0,
-          "impact": 170,
-          "explanation": "Long-established account"
-        },
-        {
-          "feature": "on_time_payment_rate",
-          "value": 1.0,
-          "impact": 106,
-          "explanation": "Clean settlement almost without exception"
-        },
-        {
-          "feature": "dispute_rate",
-          "value": 0.0,
-          "impact": 56,
-          "explanation": "No disputes on record"
-        }
-      ],
-      "recent_events": [
-        {
-          "type": "job_completed",
-          "job_id": 1,
-          "value_usd": 500.0,
-          "reason": "completed job #21, clean settlement (+7); top factor: long-established account",
-          "delta": 7,
-          "timestamp": "2026-09-18T19:09:50Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 690.0,
-          "reason": "completed job #20, clean settlement (+6); top factor: long-established account",
-          "delta": 6,
-          "timestamp": "2026-09-18T19:09:11Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 250.0,
-          "reason": "completed job #19, clean settlement (+9); top factor: long-established account",
-          "delta": 9,
-          "timestamp": "2026-09-18T19:09:11Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 560.0,
-          "reason": "completed job #18, clean settlement (+7); top factor: long-established account",
-          "delta": 7,
-          "timestamp": "2026-09-18T19:09:10Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 390.0,
-          "reason": "completed job #17, clean settlement (+8); top factor: long-established account",
-          "delta": 8,
-          "timestamp": "2026-09-18T19:09:09Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 760.0,
-          "reason": "completed job #16, clean settlement (+5); top factor: long-established account",
-          "delta": 5,
-          "timestamp": "2026-09-18T19:09:09Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 450.0,
-          "reason": "completed job #15, clean settlement (+7); top factor: long-established account",
-          "delta": 7,
-          "timestamp": "2026-09-18T19:09:08Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 640.0,
-          "reason": "completed job #14, clean settlement (+6); top factor: long-established account",
-          "delta": 6,
-          "timestamp": "2026-09-18T19:09:08Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 280.0,
-          "reason": "completed job #13, clean settlement (+10); top factor: long-established account",
-          "delta": 10,
-          "timestamp": "2026-09-18T19:09:07Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 500.0,
-          "reason": "completed job #12, clean settlement (+7); top factor: long-established account",
-          "delta": 7,
-          "timestamp": "2026-09-18T19:09:06Z"
-        }
-      ],
-      "risk_flags": []
-    },
-    {
-      "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-      "name": "SloppyAgent",
-      "score": 382,
-      "previous_score": 613,
-      "score_delta": -231,
-      "band": "poor",
+      "address": "aider:gemma4:e4b",
+      "name": "Aider",
+      "model": "gemma4:e4b",
+      "tier": "probation",
+      "previous_tier": "standard",
+      "spot_check": false,
+      "score": 520,
+      "previous_score": 640,
+      "score_delta": -120,
+      "band": "fair",
       "previous_band": "good",
       "required_collateral_bps": 10000,
       "required_collateral_pct": "100%",
@@ -136,114 +22,148 @@
       "previous_required_collateral_pct": "40%",
       "top_factors": [
         {
-          "feature": "prior_defaults",
+          "feature": "secret_leak",
           "value": 1.0,
-          "impact": -86,
-          "explanation": "More prior defaults than peers"
+          "impact": -100,
+          "explanation": "Hardcoded Slack token in app/signup.py"
         },
         {
-          "feature": "account_age_days",
-          "value": 379.0,
-          "impact": 59,
-          "explanation": "Long-established account"
+          "feature": "high_severity_findings",
+          "value": 2.0,
+          "impact": -45,
+          "explanation": "Two high-severity findings in the last 10 edits"
         },
         {
-          "feature": "avg_job_value_usd",
-          "value": 521.875,
-          "impact": -51,
-          "explanation": "Handles jobs far larger than peers"
+          "feature": "clean_edit_rate",
+          "value": 0.7,
+          "impact": 38,
+          "explanation": "Most recent edits were clean"
         }
       ],
       "recent_events": [
         {
-          "type": "dispute_lost",
-          "job_id": 2,
-          "value_usd": 500.0,
-          "reason": "lost dispute on $500 job (-231); top factor: more prior defaults than peers",
-          "delta": -231,
-          "timestamp": "2026-09-18T19:09:54Z"
+          "type": "tier_changed",
+          "edit_id": "e_0006",
+          "reason": "standard to probation: confirmed secret leak resets the agent",
+          "delta": 0,
+          "timestamp": "2026-10-09T13:41:32Z"
         },
         {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 640.0,
-          "reason": "completed job #15, clean settlement (+13); top factor: long-established account",
-          "delta": 13,
-          "timestamp": "2026-09-18T19:09:11Z"
+          "type": "finding_confirmed",
+          "edit_id": "e_0006",
+          "reason": "confirmed Slack token in app/signup.py (-20)",
+          "delta": -20,
+          "timestamp": "2026-10-09T13:41:30Z"
         },
         {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 280.0,
-          "reason": "completed job #14, clean settlement (+18); top factor: long-established account",
-          "delta": 18,
-          "timestamp": "2026-09-18T19:09:11Z"
+          "type": "edit_blocked",
+          "edit_id": "e_0006",
+          "reason": "blocked e_0006: hardcoded Slack token and a package that is not installed (-100)",
+          "delta": -100,
+          "timestamp": "2026-10-09T13:41:12Z"
         },
         {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 500.0,
-          "reason": "completed job #13, clean settlement (+17); top factor: long-established account",
-          "delta": 17,
-          "timestamp": "2026-09-18T19:09:10Z"
+          "type": "edit_clean",
+          "edit_id": "e_0005",
+          "reason": "clean edit to app/auth.py, allowed at standard tier (+8)",
+          "delta": 8,
+          "timestamp": "2026-10-09T13:38:44Z"
         },
         {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 810.0,
-          "reason": "completed job #12, clean settlement (+16); top factor: long-established account",
-          "delta": 16,
-          "timestamp": "2026-09-18T19:09:10Z"
+          "type": "edit_clean",
+          "edit_id": "e_0004",
+          "reason": "clean edit to app/notify.py, allowed at standard tier (+8)",
+          "delta": 8,
+          "timestamp": "2026-10-09T13:36:05Z"
         },
         {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 360.0,
-          "reason": "completed job #11, clean settlement (+23); top factor: long-established account",
-          "delta": 23,
-          "timestamp": "2026-09-18T19:09:10Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 590.0,
-          "reason": "completed job #10, clean settlement (+24); top factor: long-established account",
-          "delta": 24,
-          "timestamp": "2026-09-18T19:09:09Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 470.0,
-          "reason": "completed job #9, clean settlement (+29); top factor: long-established account",
-          "delta": 29,
-          "timestamp": "2026-09-18T19:09:09Z"
-        },
-        {
-          "type": "dispute_won",
-          "job_id": null,
-          "value_usd": 450.0,
-          "reason": "won dispute on $450 job (-189); top factor: long-established account",
-          "delta": -189,
-          "timestamp": "2026-09-18T19:09:08Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 720.0,
-          "reason": "completed job #7, clean settlement (+3); top factor: clean settlement almost without exception",
-          "delta": 3,
-          "timestamp": "2026-09-18T19:09:08Z"
+          "type": "edit_clean",
+          "edit_id": "e_0003",
+          "reason": "clean edit to app/signup.py, approved by you (+14)",
+          "delta": 14,
+          "timestamp": "2026-10-09T13:33:18Z"
         }
       ],
       "risk_flags": []
     },
     {
-      "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
-      "name": "Hirer",
-      "score": 877,
-      "previous_score": 871,
-      "score_delta": 6,
+      "address": "cline:gemma4:e2b",
+      "name": "Cline",
+      "model": "gemma4:e2b",
+      "tier": "standard",
+      "previous_tier": "standard",
+      "spot_check": false,
+      "score": 684,
+      "previous_score": 676,
+      "score_delta": 8,
+      "band": "good",
+      "previous_band": "good",
+      "required_collateral_bps": 4000,
+      "required_collateral_pct": "high-severity only",
+      "previous_required_collateral_bps": 4000,
+      "previous_required_collateral_pct": "high-severity only",
+      "top_factors": [
+        {
+          "feature": "clean_edit_rate",
+          "value": 0.92,
+          "impact": 96,
+          "explanation": "Almost every edit was clean"
+        },
+        {
+          "feature": "edits_reviewed",
+          "value": 41.0,
+          "impact": 54,
+          "explanation": "A solid record of reviewed edits"
+        },
+        {
+          "feature": "broken_callers",
+          "value": 1.0,
+          "impact": -20,
+          "explanation": "One edit broke a caller"
+        }
+      ],
+      "recent_events": [
+        {
+          "type": "edit_clean",
+          "edit_id": "e_0010",
+          "reason": "clean edit to app/db.py, allowed at standard tier (+8)",
+          "delta": 8,
+          "timestamp": "2026-10-09T13:40:51Z"
+        },
+        {
+          "type": "finding_dismissed",
+          "edit_id": "e_0009",
+          "reason": "you dismissed a low-severity Scope Guard finding (+2)",
+          "delta": 2,
+          "timestamp": "2026-10-09T13:39:20Z"
+        },
+        {
+          "type": "edit_held",
+          "edit_id": "e_0009",
+          "reason": "held e_0009: Scope Guard found a change outside the task (0)",
+          "delta": 0,
+          "timestamp": "2026-10-09T13:39:02Z"
+        },
+        {
+          "type": "edit_clean",
+          "edit_id": "e_0002",
+          "reason": "clean edit to app/routes.py, allowed at standard tier (+8)",
+          "delta": 8,
+          "timestamp": "2026-10-09T13:31:47Z"
+        }
+      ],
+      "risk_flags": []
+    },
+    {
+      "address": "claude-code:claude-sonnet-5-5",
+      "name": "Claude Code",
+      "model": "claude-sonnet-5-5",
+      "tier": "trusted",
+      "previous_tier": "trusted",
+      "spot_check": true,
+      "score": 846,
+      "previous_score": 841,
+      "score_delta": 5,
       "band": "excellent",
       "previous_band": "excellent",
       "required_collateral_bps": 2000,
@@ -252,107 +172,149 @@
       "previous_required_collateral_pct": "20%",
       "top_factors": [
         {
-          "feature": "account_age_days",
-          "value": 729.0,
-          "impact": 170,
-          "explanation": "Long-established account"
+          "feature": "clean_edit_rate",
+          "value": 0.98,
+          "impact": 150,
+          "explanation": "Nearly every edit stayed clean"
         },
         {
-          "feature": "on_time_payment_rate",
-          "value": 1.0,
-          "impact": 106,
-          "explanation": "Clean settlement almost without exception"
+          "feature": "edits_reviewed",
+          "value": 212.0,
+          "impact": 110,
+          "explanation": "Long record of reviewed edits"
         },
         {
-          "feature": "dispute_rate",
+          "feature": "high_severity_findings",
           "value": 0.0,
-          "impact": 56,
-          "explanation": "No disputes on record"
+          "impact": 48,
+          "explanation": "No high-severity findings on record"
         }
       ],
       "recent_events": [
         {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 650.0,
-          "reason": "completed job #22, clean settlement (+6); top factor: long-established account",
-          "delta": 6,
-          "timestamp": "2026-09-18T19:09:11Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 420.0,
-          "reason": "completed job #21, clean settlement (+7); top factor: long-established account",
-          "delta": 7,
-          "timestamp": "2026-09-18T19:09:11Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 690.0,
-          "reason": "completed job #20, clean settlement (+6); top factor: long-established account",
-          "delta": 6,
-          "timestamp": "2026-09-18T19:09:10Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 250.0,
-          "reason": "completed job #19, clean settlement (+9); top factor: long-established account",
-          "delta": 9,
-          "timestamp": "2026-09-18T19:09:10Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 560.0,
-          "reason": "completed job #18, clean settlement (+7); top factor: long-established account",
-          "delta": 7,
-          "timestamp": "2026-09-18T19:09:09Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 390.0,
-          "reason": "completed job #17, clean settlement (+8); top factor: long-established account",
-          "delta": 8,
-          "timestamp": "2026-09-18T19:09:08Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 760.0,
-          "reason": "completed job #16, clean settlement (+5); top factor: long-established account",
+          "type": "edit_clean",
+          "edit_id": "e_0011",
+          "reason": "clean edit to app/routes.py, allowed at trusted tier (+5)",
           "delta": 5,
-          "timestamp": "2026-09-18T19:09:08Z"
+          "timestamp": "2026-10-09T13:41:58Z"
         },
         {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 450.0,
-          "reason": "completed job #15, clean settlement (+7); top factor: long-established account",
-          "delta": 7,
-          "timestamp": "2026-09-18T19:09:07Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 640.0,
-          "reason": "completed job #14, clean settlement (+6); top factor: long-established account",
-          "delta": 6,
-          "timestamp": "2026-09-18T19:09:07Z"
-        },
-        {
-          "type": "job_completed",
-          "job_id": null,
-          "value_usd": 280.0,
-          "reason": "completed job #13, clean settlement (+10); top factor: long-established account",
-          "delta": 10,
-          "timestamp": "2026-09-18T19:09:06Z"
+          "type": "edit_clean",
+          "edit_id": "e_0001",
+          "reason": "clean edit to app/db.py, spot-checked and passed (+5)",
+          "delta": 5,
+          "timestamp": "2026-10-09T13:30:12Z"
         }
       ],
       "risk_flags": []
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "app/routes.py::register_routes", "file": "app/routes.py", "label": "register_routes", "heat": 0.2, "last_agent": "claude-code:claude-sonnet-5-5" },
+      { "id": "app/routes.py::signup_route", "file": "app/routes.py", "label": "signup_route", "heat": 0.5, "last_agent": "cline:gemma4:e2b" },
+      { "id": "app/routes.py::login_route", "file": "app/routes.py", "label": "login_route", "heat": 0.3, "last_agent": "cline:gemma4:e2b" },
+      { "id": "app/routes.py::health_route", "file": "app/routes.py", "label": "health_route", "heat": 0.0, "last_agent": null },
+      { "id": "app/signup.py::handle_signup", "file": "app/signup.py", "label": "handle_signup", "heat": 0.9, "last_agent": "aider:gemma4:e4b" },
+      { "id": "app/signup.py::validate_email", "file": "app/signup.py", "label": "validate_email", "heat": 0.1, "last_agent": null },
+      { "id": "app/signup.py::hash_password", "file": "app/signup.py", "label": "hash_password", "heat": 1.0, "last_agent": "aider:gemma4:e4b" },
+      { "id": "app/signup.py::create_user", "file": "app/signup.py", "label": "create_user", "heat": 0.4, "last_agent": "aider:gemma4:e4b" },
+      { "id": "app/auth.py::handle_login", "file": "app/auth.py", "label": "handle_login", "heat": 0.4, "last_agent": "aider:gemma4:e4b" },
+      { "id": "app/auth.py::check_password", "file": "app/auth.py", "label": "check_password", "heat": 0.3, "last_agent": "aider:gemma4:e4b" },
+      { "id": "app/auth.py::issue_session", "file": "app/auth.py", "label": "issue_session", "heat": 0.1, "last_agent": null },
+      { "id": "app/notify.py::send_welcome", "file": "app/notify.py", "label": "send_welcome", "heat": 0.6, "last_agent": "aider:gemma4:e4b" },
+      { "id": "app/notify.py::post_to_slack", "file": "app/notify.py", "label": "post_to_slack", "heat": 0.5, "last_agent": "aider:gemma4:e4b" },
+      { "id": "app/notify.py::format_message", "file": "app/notify.py", "label": "format_message", "heat": 0.2, "last_agent": null },
+      { "id": "app/db.py::get_user", "file": "app/db.py", "label": "get_user", "heat": 0.3, "last_agent": "cline:gemma4:e2b" },
+      { "id": "app/db.py::insert_user", "file": "app/db.py", "label": "insert_user", "heat": 0.2, "last_agent": "claude-code:claude-sonnet-5-5" }
+    ],
+    "edges": [
+      { "source": "app/routes.py::register_routes", "target": "app/routes.py::signup_route" },
+      { "source": "app/routes.py::register_routes", "target": "app/routes.py::login_route" },
+      { "source": "app/routes.py::register_routes", "target": "app/routes.py::health_route" },
+      { "source": "app/routes.py::signup_route", "target": "app/signup.py::handle_signup" },
+      { "source": "app/routes.py::login_route", "target": "app/auth.py::handle_login" },
+      { "source": "app/signup.py::handle_signup", "target": "app/signup.py::validate_email" },
+      { "source": "app/signup.py::handle_signup", "target": "app/signup.py::hash_password" },
+      { "source": "app/signup.py::handle_signup", "target": "app/signup.py::create_user" },
+      { "source": "app/signup.py::handle_signup", "target": "app/notify.py::send_welcome" },
+      { "source": "app/signup.py::create_user", "target": "app/db.py::insert_user" },
+      { "source": "app/notify.py::send_welcome", "target": "app/notify.py::format_message" },
+      { "source": "app/notify.py::send_welcome", "target": "app/notify.py::post_to_slack" },
+      { "source": "app/auth.py::handle_login", "target": "app/db.py::get_user" },
+      { "source": "app/auth.py::handle_login", "target": "app/auth.py::check_password" },
+      { "source": "app/auth.py::handle_login", "target": "app/auth.py::issue_session" },
+      { "source": "app/auth.py::check_password", "target": "app/signup.py::hash_password" }
+    ],
+    "last_edit": {
+      "edit_id": "e_0008",
+      "touched": ["app/signup.py::hash_password"],
+      "blast": [
+        "app/signup.py::handle_signup",
+        "app/auth.py::check_password",
+        "app/routes.py::signup_route",
+        "app/auth.py::handle_login",
+        "app/routes.py::login_route",
+        "app/routes.py::register_routes"
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "f_0002",
+      "edit_id": "e_0006",
+      "check": "reality_check",
+      "severity": "high",
+      "source": "gemma",
+      "file": "app/signup.py",
+      "line": 3,
+      "area": "auth",
+      "node": "app/signup.py::handle_signup",
+      "message": "Imports slack_notify_pro, which is not installed and not in requirements.txt",
+      "evidence": "from slack_notify_pro import send_alert",
+      "status": "open"
+    },
+    {
+      "id": "f_0001",
+      "edit_id": "e_0006",
+      "check": "hardcode_hunter",
+      "severity": "critical",
+      "source": "pattern",
+      "file": "app/signup.py",
+      "line": 14,
+      "area": "auth",
+      "node": "app/signup.py::handle_signup",
+      "message": "Slack bot token hardcoded",
+      "evidence": "SLACK_TOKEN = \"xoxb-…\"",
+      "status": "confirmed"
+    },
+    {
+      "id": "f_0003",
+      "edit_id": "e_0009",
+      "check": "scope_guard",
+      "severity": "low",
+      "source": "gemma",
+      "file": "app/db.py",
+      "line": 22,
+      "area": "other",
+      "node": "app/db.py::get_user",
+      "message": "Reformats get_user, which the prompt did not ask for",
+      "evidence": "- def get_user(uid):\n+ def get_user(user_id: int) -> dict | None:",
+      "status": "dismissed"
+    }
+  ],
+  "pending": [
+    {
+      "edit_id": "e_0008",
+      "agent": "aider:gemma4:e4b",
+      "file": "app/signup.py",
+      "area": "auth",
+      "added": 12,
+      "removed": 3,
+      "diff": "@@ -10,3 +10,12 @@ def hash_password(password: str) -> str:\n-    salt = \"static-salt\"\n-    digest = hashlib.sha256((salt + password).encode()).hexdigest()\n-    return digest\n+    salt = os.urandom(16)\n+    digest = hashlib.pbkdf2_hmac(\n+        \"sha256\",\n+        password.encode(),\n+        salt,\n+        200_000,\n+    )\n+    return salt.hex() + \":\" + digest.hex()\n+\n+\n+def verify_password(password: str, stored: str) -> bool:\n+    salt_hex, digest_hex = stored.split(\":\")",
+      "reason": "probation tier",
+      "blast_count": 6,
+      "finding_ids": []
     }
   ]
 }

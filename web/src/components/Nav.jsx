@@ -12,6 +12,7 @@ export default function Nav({ status }) {
           <NavLink to="/" end>
             Overview
           </NavLink>
+          <NavLink to="/blast-radius">Blast radius</NavLink>
           <NavLink to="/how-it-works">How it works</NavLink>
           <NavLink to="/docs">Docs</NavLink>
         </div>

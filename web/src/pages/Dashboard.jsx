@@ -23,7 +23,7 @@ export default function Dashboard() {
           <MicroLabel>Agents / live network</MicroLabel>
         </div>
         {agents.length === 0 ? (
-          <p className="empty">Waiting for the oracle to report agents…</p>
+          <p className="empty">Waiting for the engine to report agents…</p>
         ) : (
           <div className="grid-3">
             {agents.map((agent, index) => (

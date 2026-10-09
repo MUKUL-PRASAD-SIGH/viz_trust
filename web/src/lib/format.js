@@ -21,7 +21,25 @@ export const EVENT_LABELS = {
   payment_default: "payment default",
 };
 
+export const CHECK_LABELS = {
+  reality_check: "Reality Check",
+  hardcode_hunter: "Hardcode Hunter",
+  scope_guard: "Scope Guard",
+  test_guardian: "Test Guardian",
+  impact_analyst: "Impact Analyst",
+};
+
+// Pill colours for each tier reuse the existing band colours. Probation keeps the agent's own
+// band, so a deep drop reads red and a fresh start reads amber.
+export const tierBand = (tier, band) =>
+  tier === "trusted" ? "excellent" : tier === "standard" ? "good" : band;
+
 export const FEATURE_LABELS = {
+  secret_leak: "Secret leak",
+  high_severity_findings: "High-severity findings",
+  clean_edit_rate: "Clean edits",
+  edits_reviewed: "Edits reviewed",
+  broken_callers: "Broken callers",
   jobs_completed: "Jobs completed",
   dispute_rate: "Dispute rate",
   avg_job_value_usd: "Avg job value",

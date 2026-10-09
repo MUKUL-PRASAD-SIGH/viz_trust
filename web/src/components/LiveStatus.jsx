@@ -9,6 +9,15 @@ export default function LiveStatus({ state, error }) {
     );
   }
   const live = !error && state?.oracle_live;
+  if (state?.source === "engine" || error) {
+    const label = live ? "ENGINE LIVE" : error ? "DISCONNECTED" : "ENGINE SILENT";
+    return (
+      <div className="live-status">
+        <span className={`live-dot ${live ? "on" : "off"}`} />
+        <span className="mono-small">{label}</span>
+      </div>
+    );
+  }
   // source "chain": the score service read the Registry itself; no oracle is involved.
   const chain = state?.source === "chain";
   const label = live
