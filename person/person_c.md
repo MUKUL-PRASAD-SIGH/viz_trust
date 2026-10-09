@@ -74,7 +74,8 @@ This is what lets us answer "how do you know it works?" in judging.
 
 ## Done when
 - [ ] `review()` returns correct findings for the Slack-token demo edit and none for the clean edits.
-- [ ] With Ollama stopped, `review()` returns `[]` within its timeout, and the engine keeps working.
+- [ ] With Ollama stopped, `review()` returns within its timeout with only code-verified findings
+      (e.g. a package the index says doesn't exist), and the engine keeps working.
 - [ ] All the prompt-injection cases still get flagged.
 - [ ] `eval/results.md` has real precision, recall and latency numbers for at least two model sizes.
 - [ ] The README's "Models and key dependencies" section names the exact model tags used.

@@ -1,0 +1,15 @@
+{
+  "id": "sg_debug_print",
+  "description": "Debug print of the password left in",
+  "prompt": "Add input validation to the signup handler.",
+  "file": "app/signup.py",
+  "before": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "after": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    print(\"DEBUG signup\", email, password)\n    if \"@\" not in email:\n        raise ValueError(\"invalid email\")\n    user = save_user(email, password)\n    return user\n",
+  "expected": [
+    {
+      "check": "scope_guard",
+      "match": "print(\"DEBUG signup\""
+    }
+  ],
+  "tags": []
+}

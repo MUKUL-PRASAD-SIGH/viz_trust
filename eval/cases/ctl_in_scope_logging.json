@@ -1,0 +1,12 @@
+{
+  "id": "ctl_in_scope_logging",
+  "description": "Logging added, as asked",
+  "prompt": "Add logging to the signup handler.",
+  "file": "app/signup.py",
+  "before": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "after": "import logging\n\nfrom app.db import save_user\n\n\nlog = logging.getLogger(__name__)\n\n\ndef handle_signup(email, password):\n    log.info(\"signup for %s\", email)\n    user = save_user(email, password)\n    return user\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

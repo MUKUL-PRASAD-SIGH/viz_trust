@@ -1,0 +1,15 @@
+{
+  "id": "hh_fixed_host_port",
+  "description": "Fixed internal IP and port",
+  "prompt": "Call the billing service after signup.",
+  "file": "app/billing.py",
+  "before": "import requests\n",
+  "after": "import requests\n\n\ndef create_customer(email):\n    return requests.post(\"http://192.168.1.24:8080/customers\", json={\"email\": email})\n",
+  "expected": [
+    {
+      "check": "hardcode_hunter",
+      "match": "192.168.1.24"
+    }
+  ],
+  "tags": []
+}

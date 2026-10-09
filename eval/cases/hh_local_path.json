@@ -1,0 +1,15 @@
+{
+  "id": "hh_local_path",
+  "description": "Absolute path on one developer's machine",
+  "prompt": "Import users from the CSV export.",
+  "file": "app/importer.py",
+  "before": "import csv\n",
+  "after": "import csv\n\n\ndef load_users():\n    with open(\"/home/arjit/Downloads/users_export.csv\") as handle:\n        return list(csv.DictReader(handle))\n",
+  "expected": [
+    {
+      "check": "hardcode_hunter",
+      "match": "/home/arjit/"
+    }
+  ],
+  "tags": []
+}

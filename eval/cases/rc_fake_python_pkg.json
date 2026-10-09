@@ -1,0 +1,15 @@
+{
+  "id": "rc_fake_python_pkg",
+  "description": "Import of a package that doesn't exist",
+  "prompt": "Add Slack notifications on signup.",
+  "file": "app/signup.py",
+  "before": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "after": "from app.db import save_user\nfrom slack_notify_pro import send\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    send(\"#signups\", email)\n    return user\n",
+  "expected": [
+    {
+      "check": "reality_check",
+      "match": "from slack_notify_pro"
+    }
+  ],
+  "tags": []
+}
