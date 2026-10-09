@@ -158,4 +158,4 @@ Charithra G | Santhosh S | Sharmily H
 
 ## License
 
-To be added: an OSI-approved open-source license.
+[MIT](LICENSE)
