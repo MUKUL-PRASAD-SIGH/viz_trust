@@ -1,255 +1,144 @@
 # viz_trust: work split
 
-Two people work **independently**, then merge and validate together. There is no cross-checking
-before the merge, so the only thing that keeps the halves compatible is the contract below.
-**Freeze it before anyone starts. Changing it later breaks the merge.**
+Three people work in parallel against one shared contract, then integrate and validate together.
+The detailed task lists are in [`person/`](person/README.md). This file is the summary, the rules,
+the benchmarks and the integration checklist.
 
-| Part | Owner | Folders | Works against |
-| --- | --- | --- | --- |
-| **A. Credit scoring** | Person 1 | `score/` | Synthetic data and its own benchmarks |
-| **B. Visualisation and review** | Person 2 | `engine/`, `hook/`, `web/` (all new or reworked) | A fake score server and a real Claude Code agent |
+| Person | Part | Folders | Uses Gemma? | Works against until integration | Details |
+| --- | --- | --- | --- | --- | --- |
+| **A** | Frontend and visualisation | `web/`, `docs/api_stub.json` | No | The stub (`?stub=1`) | [person_a.md](person/person_a.md) |
+| **M** | Engine: events, score, tiers, pattern checks, graph, demo driver | `engine/`, `demo/` | No | A stubbed `gemma_checks.review()` that returns `[]` | [person_m.md](person/person_m.md) |
+| **C** | Gemma checks and evaluation | `engine/checks/gemma_checks.py`, `engine/llm/`, `eval/` | **Yes** | The contract's `Edit` and `Finding` types, tested from `eval/run.py` | [person_c.md](person/person_c.md) |
 
-Decisions already made: the halves talk over **HTTP**, the engine is **Python**, the real agent is
-**Claude Code** (PreToolUse hook), and the **on-chain part is out of scope**.
+**Decisions already made**
+
+- Everything talks over **HTTP**. The engine is **Python + FastAPI** on port **8100**.
+- The model is **Gemma 4 through Ollama**, `gemma4:e4b` by default.
+- The demo agent is a **scripted driver** first. The **Claude Code PreToolUse hook** is the stretch goal.
+- **Don't redesign the existing UI.** Only `/dashboard` changes, and only by adding panels.
+- **The on-chain part is out of the demo.** `contracts/` and `oracle/` stay in the repo untouched,
+  and nothing new depends on them.
 
 ---
 
-## 0. The contract (do this first, together, then freeze)
+## 0. The contract (agree it first, then freeze it)
 
-Put these files in `docs/contract/` so both people build against the same thing:
-`edit_event.example.json`, `agent_standing.example.json`, `contract.md`.
+The full contract is in [person/README.md](person/README.md#the-shared-contract). It is the source
+of truth. Change it there first, in its own commit, and tell the other two.
 
-### B → A: one review result per edit
+- [ ] A, M and C read the contract and agree it
+- [ ] M commits `engine/models.py` matching it, and A commits the extended `docs/api_stub.json`
 
-`POST /edits`
-
-```json
-{
-  "edit_id": "e_123",
-  "timestamp": "2026-10-09T12:00:00Z",
-  "agent_id": "claude-code",
-  "model": "claude-sonnet-5-5",
-  "repo": "viz_trust",
-  "file": "src/auth/login.py",
-  "area": "auth",
-  "lines_changed": 14,
-  "findings": [
-    {"check": "hardcode_hunter", "severity": "high", "evidence": "API key on line 8"}
-  ],
-  "callers_broken": 0
-}
-```
-
-### A → B: the agent's standing
-
-`GET /agents/{agent_id}`
-
-```json
-{
-  "agent_id": "claude-code",
-  "score": 640,
-  "tier": "standard",
-  "spot_check": false,
-  "reasons": [{"factor": "high_severity_findings", "points": -35}]
-}
-```
-
-### Fixed vocabularies (both sides use exactly these strings)
+### Fixed vocabularies (everyone uses exactly these strings)
 
 - `check`: `reality_check`, `hardcode_hunter`, `scope_guard`, `test_guardian`, `impact_analyst`
 - `severity`: `low`, `medium`, `high`, `critical`
+- `source`: `pattern`, `gemma`
 - `tier`: `trusted` (800+), `standard` (600–799), `probation` (under 600 or new)
 - `area`: `auth`, `payments`, `migrations`, `api`, `ui`, `tests`, `config`, `other`
+- `decision`: `allow`, `hold`, `deny`
 
-### Rules everyone must follow
+### Rules everyone follows
 
-- The only signals A can use are: **findings (check and severity), `callers_broken`, `lines_changed`,
-  `area`, `agent_id`, `model`, `timestamp`**. Nothing else crosses the wire.
-- There is **no user feedback** (confirmed or dismissed) in this version. A can't score on false alarms.
-- A `critical` `hardcode_hunter` finding means a confirmed secret leak, so A resets the agent to probation.
-- New or unknown agents: A returns `score: 500`, `tier: "probation"`. It never returns a 404.
-- `GET /agents/{id}/areas` returns per-area scores: `{"areas": {"auth": 720, "payments": 410}}`.
-- The base URL comes from the `SCORE_API_URL` environment variable (default `http://127.0.0.1:8000`).
-- Unknown fields are ignored, and missing optional fields get defaults. No crashes either way.
-
-- [ ] Both people agree the contract and commit `docs/contract/`
-- [ ] Both people confirm the fixed vocabularies above, especially the `area` list
-
----
-
-## Part A: Credit scoring (Person 1)
-
-Goal: a trustworthy 0–1000 score with reasons, a tier, and benchmarks that show it behaves well.
-You never need the visualisation side. Build against the sample JSON in `docs/contract/`.
-
-### A1. Redefine the features
-- [ ] Define features computable only from contract fields, for example: clean-edit rate,
-  findings per edit by severity, findings per check, broken callers per edit, average edit size,
-  edits seen (experience), account age, and share of edits in risky areas
-- [ ] Update the feature definitions in `SPEC.md` (the Aegis features and loan terms go away)
-- [ ] Rewrite `score/generate_data.py` to simulate agents with these features, including
-  agent archetypes: careful, sloppy, improving, degrading, and gaming
-- [ ] Keep the AUC band check (0.80–0.88) and the 500 anchor in `score/train.py`, re-tuned to the new target
-- [ ] Retrain, and replace the Aegis tests in `score/tests/`
-
-### A2. Score service
-- [ ] `POST /edits` validates against the contract, stores the edit, updates the agent, returns the new standing
-- [ ] `GET /agents/{id}` returns score, tier, `spot_check` and reasons (unknown agent gives 500 and probation)
-- [ ] `GET /agents/{id}/areas` returns per-area scores
-- [ ] `GET /agents/{id}/history` returns score over time (for the UI chart)
-- [ ] `GET /agents` lists all agents with score and tier (for the model comparison view)
-- [ ] Trust ledger: persistent SQLite storage of every edit and every score change
-- [ ] Reasons built from per-feature contributions, as in the current model
-- [ ] Reject bad input with clear 4xx errors, and ignore unknown fields
-- [ ] CORS enabled so the web UI can call it from the browser
-
-### A3. Tier and rule logic
-- [ ] Tiers: trusted 800+, standard 600–799, probation under 600 or new
-- [ ] `spot_check` is true for about 1 in 5 edits from trusted agents (seeded so tests are stable)
-- [ ] A `critical` `hardcode_hunter` finding resets the agent straight to probation
-- [ ] Score rises with clean edits and falls with high-severity findings and broken callers
-
-### A4. Anti-gaming
-- [ ] Cap how much trivial one-line edits can raise the score
-- [ ] A fresh `agent_id` can't skip probation, and cheap identity-hopping doesn't help
-- [ ] Scores don't all bunch into one band (keep the existing distribution check, updated)
-- [ ] A dedicated test for each of these
-
-### A5. Per-model and per-area scoring, and the router
-- [ ] Score per model and per area from the same ledger
-- [ ] `GET /route?area=auth` returns the model with the best record in that area
-- [ ] Model comparison data from the stored edits
-
-### A6. Benchmarks and tests (this is your validation, since nobody checks you before the merge)
-- [ ] Unit tests for every rule in A3 and A4
-- [ ] Archetype benchmark: careful agents end up trusted, sloppy ones on probation, within N edits
-- [ ] Sensitivity test: one critical finding drops a trusted agent by a measurable amount
-- [ ] Score distribution report across 5,000 synthetic agents
-- [ ] Contract test: every example in `docs/contract/` is accepted and returns the documented shape
-- [ ] Load test: 100 edits per second don't corrupt the ledger
-- [ ] `pytest` passes, and the benchmark results are written to `score/BENCHMARKS.md`
-
-### A7. Cleanup (on-chain is out of scope)
-- [ ] Remove `contracts/`, `oracle/`, `deployments/`, `render.yaml` entries and `agents/` demo scripts
-  that depend on them, and the web components that show escrow and collateral. Do this last, and
-  coordinate with Person 2 on `web/` so you don't both edit the same files.
-
-### A8. Done when
-- [ ] The service runs with `uvicorn app:app` and answers every contract endpoint with the documented shapes
-- [ ] Benchmarks are written up and pass
+- A **`critical` `hardcode_hunter`** finding means a real secret. The edit is denied whatever the
+  tier, and the agent resets to probation.
+- An unknown agent gets `score: 500` and `tier: "probation"`. Never a 404.
+- Unknown fields are ignored and missing optional fields get defaults. No crashes either way.
+- Each edited file maps to an `area` by path rules (M owns the rules).
+- Trusted agents get `spot_check: true` on about 1 in 5 edits, seeded so tests are stable.
+- Gemma only ever **adds** findings. Allow, hold and deny are decided by the engine's rules.
+- Confirm and dismiss verdicts from the dashboard are part of this version (Arjit's draft left them
+  out). They count, but objective signals (tests, reverts, broken callers) count more.
 
 ---
 
-## Part B: Visualisation and review (Person 2)
+## A: Frontend and visualisation
 
-Goal: review each Claude Code edit before it's written, and show what it did on a live graph.
-You never need the real score service. Run the fake one from B1 and keep tiers switchable.
+Full list: [person_a.md](person/person_a.md).
 
-### B1. Fake score server (build this first so you're never blocked)
-- [ ] `engine/fake_score_server.py` serves the contract endpoints from fixed data
-- [ ] Switchable tier through an environment variable or query, so you can test trusted, standard and probation
-- [ ] Saves every `POST /edits` it receives to a file, so you can inspect what you send
-- [ ] Reads the same example files as `docs/contract/`
+- [ ] Extend `docs/api_stub.json` with `tier`, `model`, `graph`, `findings` and `pending`
+- [ ] `BlastGraph`: a 2D call graph where touched nodes glow and callers ripple out
+- [ ] `FindingsPanel`: evidence, a pattern or gemma tag, Confirm and Dismiss
+- [ ] `HeldEditDialog`: the diff, the reason, the blast count, Approve and Deny
+- [ ] Add a "Blast radius / live" section to `/dashboard` between the agents and the activity feed
+- [ ] Small wording changes on `AgentCard` (tier, model, "Edits reviewed")
+- [ ] A clear message when the engine is unreachable (reuse `StatusBanner`)
+- [ ] Stretch: 3D view, heat-map view, a model comparison view, a score history chart
 
-### B2. Gemma 4 through Ollama
-- [ ] Ollama installed, and `gemma4:e4b` pulled and answering
-- [ ] Client wrapper using the local API, model name from `VIZ_TRUST_MODEL`
-- [ ] Timeouts, retries, and a clear error when Ollama is down
-- [ ] Structured JSON output from the model, validated before use
+## M: Engine
 
-### B3. The five checks (`engine/`)
-- [ ] **Reality Check:** imports and APIs that don't exist, wrong signatures
-- [ ] **Hardcode Hunter:** secrets, credentialed URLs, local paths, fixed ports, placeholders. A real secret is `critical`
-- [ ] **Scope Guard:** edits unrelated to the prompt, unrequested lockfile, `.env` or CI changes
-- [ ] **Test Guardian:** skipped, `.only`, always-true or deleted tests
-- [ ] **Impact Analyst:** blast radius and `callers_broken`
-- [ ] Pattern checks first, Gemma 4 only for the judgement parts
-- [ ] Output only the contract's `check` and `severity` values
-- [ ] A test set of good and bad edits for each check, and a precision and recall report
+Full list: [person_m.md](person/person_m.md).
 
-### B4. Call graph and blast radius
-- [ ] Parse a repo into a call graph (functions, files, callers)
-- [ ] Compute the blast radius of each edit and `callers_broken`
-- [ ] Update incrementally when a file changes
-- [ ] Port what's reusable from Blast Radius Live
+- [ ] Engine skeleton on `:8100` serving the contract, starting with fake data, so A can switch early
+- [ ] Append-only SQLite event log, with the state rebuilt from the log
+- [ ] v0 score as a points table with reasons, plus the tiers, `spot_check` and the critical-leak reset
+- [ ] Anti-gaming: gains scaled by edit size and blast radius; a fresh agent id can't skip probation
+- [ ] Decision flow: `POST /edits`, `GET /edits/{id}`, `POST /decisions`, `POST /findings/{id}/verdict`
+- [ ] Pattern checks: Hardcode Hunter, Test Guardian, and the exact parts of Reality Check and Scope Guard
+- [ ] Call graph and blast radius with Python's `ast`, plus `area` mapping
+- [ ] `demo/sample_repo/` and `demo/driver.py` (with `--fast` and `reset`)
+- [ ] Stretch: Claude Code PreToolUse hook (silent if the engine is down, dead engine means allow, never hangs)
+- [ ] Stretch: `GET /agents/{id}/history`, `GET /agents/{id}/areas`, `GET /route?area=auth`
+- [ ] Later: retrain `score/`'s logistic regression on edit features, with archetypes (careful,
+      sloppy, improving, degrading, gaming), keeping the 0.80–0.88 AUC band and the 500 anchor
 
-### B5. Claude Code hook (the real agent)
-- [ ] PreToolUse hook for Edit and Write: build the event, run the checks, post to `SCORE_API_URL`, read the tier
-- [ ] Apply the tier: trusted allows, standard holds on `high` or `critical` findings, probation holds everything
-- [ ] Honour `spot_check`: when true, run the full review even for a trusted agent
-- [ ] Fail safe: no server means silent allow, a dead server means allow, and the hook times out instead of freezing
-- [ ] Held edits show a clear reason, and the user can approve or reject
-- [ ] MCP server with `impact`, `hotspots`, `findings` and `trust` tools
-- [ ] Map each edited file to an `area` using path rules
+## C: Gemma checks and evaluation
 
-### B6. Web UI (`web/`)
-- [ ] Remove the Aegis pages and copy (escrow, collateral)
-- [ ] Live graph with 3D, 2D and heat-map views, lighting up as edits land
-- [ ] Colour nodes by blast radius, with a toggle for the trust of the agent that made the change
-- [ ] Findings panel with evidence
-- [ ] Agent view: score, tier, reasons and history, read from `SCORE_API_URL`
-- [ ] Edit timeline, held-edits queue and model comparison view
-- [ ] Works with the fake server and shows a clear message when the score service is unreachable
+Full list: [person_c.md](person/person_c.md).
 
-### B7. Screenshot review
-- [ ] Capture before and after screenshots for frontend changes
-- [ ] Send both to Gemma 4 and report visual regressions as `findings`
-
-### B8. Testing with the real agent (this is your validation before the merge)
-- [ ] A scripted set of edits Claude Code should make: a clean one, a hardcoded key, a deleted test, a hallucinated import, an edit that breaks a caller
-- [ ] Each produces the expected finding, tier decision and graph update
-- [ ] Kill the fake server and Ollama in turn and confirm the hook never blocks work
-- [ ] Event files saved by the fake server pass validation against `docs/contract/`
-
-### B9. Done when
-- [ ] A real Claude Code session is reviewed locally, findings and graph update live, and tier decisions follow the fake server's tier
+- [ ] Gemma client: JSON-schema output, a timeout, one retry, Pydantic validation, per-call logging, a warm-up call
+- [ ] Judgement checks: Scope Guard, Reality Check (with a PyPI or npm lookup done in code), Test Guardian, Hardcode Hunter
+- [ ] `review(edit)`: merge findings, drop any that cite missing lines, never raise, never hang
+- [ ] Fix-it prompts for each finding
+- [ ] Evaluation set in `eval/`, with clean controls and prompt-injection cases
+- [ ] Stretch: screenshot review with Gemma 4 image input
 
 ---
 
-## Benchmarks (what we measure, and who builds each one)
+## Benchmarks (what we measure, and who owns each one)
 
-Nobody validates the other half before the merge, so each person ships their own benchmark and
-a written result. Numbers go in `score/BENCHMARKS.md` (Person 1) and `engine/BENCHMARKS.md`
-(Person 2), and the merge benchmark goes in `docs/BENCHMARKS.md`.
+Results go in `engine/BENCHMARKS.md` (M), `eval/results.md` (C) and `docs/BENCHMARKS.md`
+(integration).
 
-### Benchmark 1: Does the score behave? (Person 1, uses synthetic agents)
-- [ ] **Separation:** careful agents reach `trusted` and sloppy agents stay `probation`. Report how many edits it takes
+### Benchmark 1: Does the score behave? (M)
+- [ ] **Separation:** a careful scripted agent reaches `trusted` and a sloppy one stays on `probation`. Report how many edits it takes
 - [ ] **Speed of drop:** edits for a trusted agent to fall to `standard` after a run of bad edits
-- [ ] **Leak response:** a `critical` `hardcode_hunter` finding sends a trusted agent to `probation` in one step
-- [ ] **Gaming resistance:** an agent making only one-line edits, and an agent that changes `agent_id`, do not reach `trusted`
-- [ ] **Distribution:** score spread across 5,000 synthetic agents, with no single band holding most of them
-- [ ] **Model quality:** AUC stays in the 0.80–0.88 band, and the per-feature reasons add up to the score
-- [ ] **Throughput:** 100 edits per second without corrupting the ledger
+- [ ] **Leak response:** one `critical` `hardcode_hunter` finding sends a trusted agent to `probation`
+- [ ] **Gaming resistance:** one-line-edit farming and changing `agent_id` don't reach `trusted`
+- [ ] **Replay:** the score rebuilt from the log matches the live score
 
-### Benchmark 2: Do the checks catch the right things? (Person 2, uses labelled edits)
-- [ ] Build a labelled set of edits in `engine/benchmark/`: at least 20 good and 20 bad per check, each with the expected finding and severity
-- [ ] **Precision and recall** for each of the five checks
-- [ ] **False-block rate:** how often a good edit would be held. This is the number that decides whether anyone keeps the tool switched on
-- [ ] **Pattern checks vs Gemma 4:** how much Gemma 4 adds over patterns alone
-- [ ] **Model size:** `gemma4:e2b` vs `gemma4:e4b` on accuracy and time per edit
-- [ ] **Latency:** review time per edit, and extra time added to a Claude Code edit by the hook
-- [ ] **Safety:** the hook allows the edit within the timeout when the server or Ollama is down
+### Benchmark 2: Do the checks catch the right things? (C, with M's pattern checks)
+- [ ] A labelled set in `eval/`: at least 40 cases across all five checks, including clean controls and prompt-injection cases
+- [ ] **Precision and recall** for each check
+- [ ] **False-block rate:** how often a good edit would be held. This decides whether anyone keeps the tool switched on
+- [ ] **Patterns only vs patterns + Gemma 4:** how much Gemma adds
+- [ ] **Model size:** `gemma4:e2b` vs `e4b` (and `12b` if the VRAM allows) on accuracy and time per edit
+- [ ] **Latency:** p50 and p95 review time per edit
+- [ ] **Safety:** with Ollama stopped, `review()` returns `[]` within its timeout
 
-### Benchmark 3: Does the whole thing work together? (both, at the merge)
-- [ ] Replay the same scripted sequences through the real hook, engine and score service: a clean agent, a sloppy agent, an improving agent and a gaming agent
-- [ ] **Bad edits held:** share of bad edits that are held or blocked
-- [ ] **Good edits held:** share of good edits that are held, split by tier (a trusted agent should see almost none)
-- [ ] **Time to tier:** edits for the sloppy agent to reach `probation`, and for the clean agent to reach `standard` and `trusted`
-- [ ] **Compare with no tiers:** the same sequences reviewed with everything held, to show how much review work tiers save
-- [ ] **Model comparison:** the model that wins per area in the UI matches the ledger
+### Benchmark 3: Does it work together? (everyone, at integration)
+- [ ] Replay scripted sessions through the driver, engine and dashboard: a clean agent, a sloppy one, an improving one and a gaming one
+- [ ] **Bad edits held:** the share of bad edits that are held or blocked
+- [ ] **Good edits held:** the share of good edits held, split by tier (a trusted agent should see almost none)
+- [ ] **Compare with no tiers:** the same sessions with everything held, to show how much review work the tiers save. **This is the headline number for the pitch**
+- [ ] **UI matches the log:** scores, tiers and findings on the dashboard match the event log
 
 ---
 
-## Merge (together, after both halves are done)
+## Integration (together, after the three parts work alone)
 
-Nobody validates before this, so this is where everything gets checked.
+- [ ] C's `review()` replaces M's stub, and the engine still works with Ollama stopped
+- [ ] A switches from `?stub=1` to `?api=http://127.0.0.1:8100`, and every panel updates live
+- [ ] Approve, Deny, Confirm and Dismiss from the dashboard reach the engine and move the score
+- [ ] The four demo beats run end to end: new agent held, clean edits earn Standard, the Slack-token edit is blocked, back to probation
+- [ ] Fix contract mismatches in `person/README.md` first, then in code
+- [ ] Update the README Status table and the "Run it" section of `SETUP.md`
+- [ ] Rehearse on the demo machine with `gemma4:e4b`
 
-- [ ] Point `SCORE_API_URL` at the real score service and run the whole of B8 again
-- [ ] Check that every event the hook sends passes A's validation (no 4xx)
-- [ ] Check that every field A returns is read correctly by the hook and UI
-- [ ] End-to-end demo: a sloppy session drops an agent to probation, and a clean one earns standard or trusted
-- [ ] Check that the UI score history, tiers and model comparison match the ledger
-- [ ] Fix mismatches in the contract, and update `docs/contract/` so both sides agree again
-- [ ] Remove `fake_score_server.py` or keep it only as a test fixture
-- [ ] Update the README Status table and `SETUP.md`
-- [ ] Choose and add an open-source license
+## Later (after the demo works)
+
+- [ ] Rename leftover Aegis strings in `web/` (`links.js`, `docs.js`, `package.json`) and `render.yaml`
+- [ ] Rewrite `SPEC.md` for viz_trust, or move it to `SPEC_AEGIS.md`
+- [ ] Decide whether to remove `contracts/`, `oracle/`, `deployments/` and the `agents/` demo scripts
+- [ ] Open-source agent adapters (Aider, Cline, OpenHands) and an MCP server
+- [x] MIT license

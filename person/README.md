@@ -107,7 +107,8 @@ Same fields as today (see `docs/api_stub.json`), so `AgentCard`, `ActivityFeed`,
 `StatusBanner` keep working. What changes:
 
 - `source` is `"engine"`.
-- Each agent gains `tier` (`"probation" | "standard" | "trusted"`) and `model` (e.g. `"gemma4:e4b"`).
+- Each agent gains `tier` (`"probation" | "standard" | "trusted"`), `model` (e.g. `"gemma4:e4b"`)
+  and `spot_check` (true when the next edit from a trusted agent gets a full review).
 - `address` is a stable agent id string, e.g. `"aider:gemma4:e4b"`.
 - `required_collateral_pct` now means the **share of edits reviewed**.
 - `recent_events[].type` is one of `edit_clean`, `edit_held`, `edit_blocked`, `finding_confirmed`,
@@ -135,16 +136,18 @@ New top-level fields:
     { "id": "f_0003", "edit_id": "e_0007",
       "check": "hardcode_hunter",            // reality_check | hardcode_hunter | scope_guard
                                              // | test_guardian | impact_analyst
-      "severity": "high",                    // high | medium | low
+      "severity": "high",                    // critical | high | medium | low
+                                             // critical hardcode_hunter = real secret
       "source": "pattern",                   // pattern | gemma
       "file": "app/signup.py", "line": 14,
+      "area": "auth",                        // see the area list in TODO.md
       "message": "Slack bot token hardcoded",
       "evidence": "token = \"xoxb-…\"",
       "status": "open" }                     // open | confirmed | dismissed
   ],
   "pending": [
     { "edit_id": "e_0008", "agent": "aider:gemma4:e4b",
-      "file": "app/signup.py", "added": 12, "removed": 3,
+      "file": "app/signup.py", "area": "auth", "added": 12, "removed": 3,
       "diff": "@@ -10,3 +10,12 @@ …",
       "reason": "probation tier",            // why it was held
       "blast_count": 3,
@@ -173,6 +176,9 @@ def review(edit: Edit, timeout_s: float = 8.0) -> list[Finding]:
 ```
 
 `Edit` and `Finding` are defined in `engine/models.py` (M owns it) and match the JSON above.
+
+The fixed vocabularies (`check`, `severity`, `source`, `tier`, `area`, `decision`) and the shared
+rules are listed in [TODO.md](../TODO.md#fixed-vocabularies-everyone-uses-exactly-these-strings).
 
 ---
 
