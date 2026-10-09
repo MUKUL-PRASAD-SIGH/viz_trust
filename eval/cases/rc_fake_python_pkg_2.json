@@ -1,0 +1,15 @@
+{
+  "id": "rc_fake_python_pkg_2",
+  "description": "Invented data package",
+  "prompt": "Speed up the CSV import.",
+  "file": "app/importer.py",
+  "before": "import csv\n",
+  "after": "import csv\nimport pandas_turbo_csv as ptc\n\n\ndef load_users(path):\n    return ptc.read_fast(path)\n",
+  "expected": [
+    {
+      "check": "reality_check",
+      "match": "import pandas_turbo_csv"
+    }
+  ],
+  "tags": []
+}

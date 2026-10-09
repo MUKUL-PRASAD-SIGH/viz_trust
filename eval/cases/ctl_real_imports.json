@@ -1,0 +1,12 @@
+{
+  "id": "ctl_real_imports",
+  "description": "Real packages",
+  "prompt": "Add a retrying HTTP client.",
+  "file": "app/http.py",
+  "before": "",
+  "after": "import requests\nfrom urllib3.util.retry import Retry\n\n\ndef session():\n    s = requests.Session()\n    return s\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

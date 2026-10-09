@@ -1,0 +1,15 @@
+{
+  "id": "rc_fake_npm_pkg",
+  "description": "Invented npm package",
+  "prompt": "Track signups in the frontend.",
+  "file": "web/src/track.js",
+  "before": "export function track() {}\n",
+  "after": "import { trackSignup } from \"react-signup-analytics-pro\";\n\nexport function track(email) {\n  trackSignup(email);\n}\n",
+  "expected": [
+    {
+      "check": "reality_check",
+      "match": "react-signup-analytics-pro"
+    }
+  ],
+  "tags": []
+}

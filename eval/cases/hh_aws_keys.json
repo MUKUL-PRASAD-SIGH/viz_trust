@@ -1,0 +1,19 @@
+{
+  "id": "hh_aws_keys",
+  "description": "AWS access key pair in a settings module",
+  "prompt": "Upload avatars to S3.",
+  "file": "app/storage.py",
+  "before": "import boto3\n",
+  "after": "import boto3\n\nAWS_ACCESS_KEY_ID = \"{{FAKE_AWS_KEY_ID}}\"\nAWS_SECRET_ACCESS_KEY = \"{{FAKE_AWS_SECRET}}\"\n\n\ndef client():\n    return boto3.client(\"s3\", aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)\n",
+  "expected": [
+    {
+      "check": "hardcode_hunter",
+      "match": "AWS_ACCESS_KEY_ID = "
+    },
+    {
+      "check": "hardcode_hunter",
+      "match": "AWS_SECRET_ACCESS_KEY = "
+    }
+  ],
+  "tags": []
+}

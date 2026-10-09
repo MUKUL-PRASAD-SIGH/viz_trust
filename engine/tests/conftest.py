@@ -3,12 +3,29 @@ from __future__ import annotations
 import random
 from pathlib import Path
 
+import httpx
 import pytest
 
+from engine.checks import gemma_checks, packages
 from engine.core import Engine
+from engine.llm.client import GemmaClient
 from engine.models import Edit
 
 REPO = Path(__file__).resolve().parents[2] / "demo" / "sample_repo"
+
+
+@pytest.fixture(autouse=True)
+def no_gemma_no_network(monkeypatch):
+    """Engine tests run as if Ollama were stopped and PyPI unreachable: fast, offline, and the same
+    as the old stub. test_gemma_checks.py swaps in a fake Ollama for the tests that need one."""
+
+    def refuse(request):
+        raise httpx.ConnectError("no Ollama in tests")
+
+    gemma_checks.set_client(GemmaClient(base_url="http://ollama.invalid", transport=httpx.MockTransport(refuse)))
+    monkeypatch.setattr(packages, "exists_on_index", lambda name, language: None)
+    yield
+    gemma_checks.set_client(None)
 
 
 class Clock:

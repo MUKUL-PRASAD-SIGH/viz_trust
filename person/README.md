@@ -143,7 +143,10 @@ New top-level fields:
       "area": "auth",                        // see the area list in TODO.md
       "message": "Slack bot token hardcoded",
       "evidence": "token = \"xoxb-…\"",
-      "status": "open" }                     // open | confirmed | dismissed
+      "status": "open",                      // open | confirmed | dismissed
+      "fix_prompt": "Move the token into an environment variable." }
+                                             // Gemma findings only; "" for pattern findings.
+                                             // Backs the Fix it / Copy prompt buttons
   ],
   "pending": [
     { "edit_id": "e_0008", "agent": "aider:gemma4:e4b",

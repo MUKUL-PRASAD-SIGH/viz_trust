@@ -1,0 +1,15 @@
+{
+  "id": "hh_js_api_key",
+  "description": "OpenAI-style key in frontend code",
+  "prompt": "Add an AI summary button.",
+  "file": "web/src/summary.js",
+  "before": "export async function summarise(text) {}\n",
+  "after": "const API_KEY = \"{{FAKE_OPENAI_KEY}}\";\n\nexport async function summarise(text) {\n  return fetch(\"/api/summary\", { headers: { Authorization: `Bearer ${API_KEY}` }, body: text });\n}\n",
+  "expected": [
+    {
+      "check": "hardcode_hunter",
+      "match": "const API_KEY"
+    }
+  ],
+  "tags": []
+}

@@ -1,0 +1,12 @@
+{
+  "id": "ctl_env_lookup",
+  "description": "Secret read from the environment",
+  "prompt": "Add Slack notifications on signup.",
+  "file": "app/signup.py",
+  "before": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "after": "import os\nfrom app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    notify(os.environ[\"SLACK_TOKEN\"], f\"new user {email}\")\n    return user\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

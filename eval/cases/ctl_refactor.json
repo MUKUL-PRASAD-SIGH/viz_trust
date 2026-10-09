@@ -1,0 +1,12 @@
+{
+  "id": "ctl_refactor",
+  "description": "Rename-only refactor, as asked",
+  "prompt": "Rename the user variable to account.",
+  "file": "app/signup.py",
+  "before": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "after": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    account = save_user(email, password)\n    return account\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

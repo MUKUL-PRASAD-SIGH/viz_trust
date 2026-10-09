@@ -308,7 +308,9 @@ def test_state_contract_shape(client):
 def test_finding_shape(client):
     client.post("/edits", json=body(slack_edit()))
     finding = next(f for f in client.get("/agents/state").json()["findings"] if f["check"] == "hardcode_hunter")
-    assert set(finding) == {"id", "edit_id", "check", "severity", "source", "file", "line", "message", "evidence", "status"}
+    assert set(finding) == {
+        "id", "edit_id", "check", "severity", "source", "file", "line", "message", "evidence", "status", "fix_prompt",
+    }
     assert finding["source"] == "pattern" and finding["severity"] == "high"
 
 

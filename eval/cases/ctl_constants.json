@@ -1,0 +1,12 @@
+{
+  "id": "ctl_constants",
+  "description": "Ordinary constant, as asked",
+  "prompt": "Add a timeout to outgoing requests.",
+  "file": "app/http.py",
+  "before": "import requests\n",
+  "after": "import requests\n\nTIMEOUT_SECONDS = 10\n\n\ndef get(url):\n    return requests.get(url, timeout=TIMEOUT_SECONDS)\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "ctl_alias_import",
+  "description": "yaml is installed as PyYAML",
+  "prompt": "Load settings from a YAML file.",
+  "file": "app/settings.py",
+  "before": "",
+  "after": "import yaml\n\n\ndef load(path):\n    with open(path) as handle:\n        return yaml.safe_load(handle)\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "rc_fake_api_call",
+  "description": "A real library with an invented function",
+  "prompt": "Fetch the exchange rate.",
+  "file": "app/rates.py",
+  "before": "import requests\n",
+  "after": "import requests\n\n\ndef rate():\n    data = requests.fetch_json(\"https://api.example.com/rate\")\n    return data[\"rate\"]\n",
+  "expected": [
+    {
+      "check": "reality_check",
+      "match": "requests.fetch_json"
+    }
+  ],
+  "tags": []
+}

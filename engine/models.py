@@ -46,6 +46,8 @@ class Finding(BaseModel):
     message: str
     evidence: str = ""
     status: Literal["open", "confirmed", "dismissed"] = "open"
+    # Gemma findings only: a prompt the user can hand back to the coding agent (the "Fix it" button).
+    fix_prompt: str = ""
 
 
 class EditResult(BaseModel):

@@ -1,0 +1,12 @@
+{
+  "id": "ctl_local_import",
+  "description": "Import from the repo's own package",
+  "prompt": "Use the User model in signup.",
+  "file": "app/signup.py",
+  "before": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "after": "from app.db import save_user\nfrom app.models import User\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

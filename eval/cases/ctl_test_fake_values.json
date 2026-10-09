@@ -1,0 +1,12 @@
+{
+  "id": "ctl_test_fake_values",
+  "description": "Obviously fake values in a new test",
+  "prompt": "Add a test for signup.",
+  "file": "tests/test_signup.py",
+  "before": "from app.signup import handle_signup\n",
+  "after": "from app.signup import handle_signup\n\n\ndef test_signup_saves_user():\n    user = handle_signup(\"test@example.com\", \"correct-horse-battery\")\n    assert user.email == \"test@example.com\"\n",
+  "expected": [],
+  "tags": [
+    "control"
+  ]
+}

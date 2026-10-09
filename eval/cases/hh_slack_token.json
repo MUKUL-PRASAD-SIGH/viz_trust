@@ -1,0 +1,15 @@
+{
+  "id": "hh_slack_token",
+  "description": "Slack bot token hard-coded in app code",
+  "prompt": "Add Slack notifications on signup.",
+  "file": "app/signup.py",
+  "before": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    return user\n",
+  "after": "from app.db import save_user\n\n\ndef handle_signup(email, password):\n    user = save_user(email, password)\n    slack_token = \"{{FAKE_SLACK_TOKEN}}\"\n    notify(slack_token, f\"new user {email}\")\n    return user\n",
+  "expected": [
+    {
+      "check": "hardcode_hunter",
+      "match": "slack_token = "
+    }
+  ],
+  "tags": []
+}
