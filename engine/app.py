@@ -7,6 +7,7 @@ Environment:
     VIZ_TRUST_DB     SQLite event log (default engine/data/viz_trust.db)
     VIZ_TRUST_SEED   fixes the random spot-check, for reproducible demos
     VIZ_TRUST_HOLD_TIMEOUT_S   how long a held edit waits (default 120)
+    VIZ_TRUST_WARMUP           set to 0 to skip loading the Gemma model at startup
 
 The dashboard reads GET /agents/state and is opened with
     http://127.0.0.1:5173/dashboard?api=http://127.0.0.1:8100
@@ -17,12 +18,15 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import os
+import logging
 import random
+import threading
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from engine.checks import gemma_checks
 from engine.core import Engine, EngineError
 from engine.models import (
     AgentsStateResponse, DecisionRequest, Edit, EditResult, EditStatus, HealthResponse, VerdictRequest,
@@ -30,6 +34,23 @@ from engine.models import (
 
 ROOT = Path(__file__).resolve().parent.parent
 HOLD_SWEEP_S = 5.0
+log = logging.getLogger("engine")
+
+
+def warm_up_gemma() -> None:
+    """Load the model into memory so the first real edit isn't a 20 s cold start.
+
+    Runs on a daemon thread so it never delays startup or shutdown, and never raises: with
+    Ollama stopped the engine simply runs on pattern checks.
+    """
+    def work() -> None:
+        try:
+            ready = gemma_checks.client().warm_up()
+            log.info("gemma warm-up %s", "done" if ready else "skipped (Ollama or the model is not available)")
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gemma warm-up failed: %s", exc)
+
+    threading.Thread(target=work, name="gemma-warmup", daemon=True).start()
 
 
 def build_engine() -> Engine:
@@ -42,7 +63,11 @@ def build_engine() -> Engine:
     )
 
 
-def create_app(engine: Engine | None = None) -> FastAPI:
+def create_app(engine: Engine | None = None, warm_up: bool | None = None) -> FastAPI:
+    """`warm_up` None means: warm the model only for the real app (no engine passed in), and
+    only unless VIZ_TRUST_WARMUP=0. Tests pass an engine, so they never touch Ollama."""
+    if warm_up is None:
+        warm_up = engine is None and os.environ.get("VIZ_TRUST_WARMUP", "1") != "0"
     engine = engine or build_engine()
 
     @contextlib.asynccontextmanager
@@ -52,6 +77,8 @@ def create_app(engine: Engine | None = None) -> FastAPI:
                 await asyncio.sleep(HOLD_SWEEP_S)
                 engine.expire_holds()
 
+        if warm_up:
+            warm_up_gemma()
         task = asyncio.create_task(sweep())
         yield
         task.cancel()
