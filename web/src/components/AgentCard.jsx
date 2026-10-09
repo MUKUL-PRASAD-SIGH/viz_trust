@@ -5,7 +5,7 @@ import Crossfade from "./Crossfade.jsx";
 import FactorList from "./FactorList.jsx";
 import MicroLabel from "./MicroLabel.jsx";
 import ScoreBar from "./ScoreBar.jsx";
-import { direction, shortAddress, signed } from "../lib/format.js";
+import { direction, shortAddress, signed, tierBand } from "../lib/format.js";
 
 const HIGHLIGHT_MS = 1200;
 
@@ -22,6 +22,9 @@ export default function AgentCard({ agent, position, total }) {
     return () => clearTimeout(off);
   }, [agent.score]);
 
+  const tierMoved = agent.previous_tier
+    ? agent.previous_tier !== agent.tier
+    : agent.previous_band !== agent.band;
   const collateralMoved = agent.previous_required_collateral_pct !== agent.required_collateral_pct;
 
   return (
@@ -29,13 +32,13 @@ export default function AgentCard({ agent, position, total }) {
       <header className="spec-head">
         <div>
           <h3 className="spec-name">{agent.name}</h3>
-          <div className="spec-path">agent/{shortAddress(agent.address)}</div>
+          <div className="spec-path">{agent.model ?? `agent/${shortAddress(agent.address)}`}</div>
         </div>
         <span className="spec-path">score/{agent.score}</span>
       </header>
 
       <div>
-        <MicroLabel>Credit score</MicroLabel>
+        <MicroLabel>Trust score</MicroLabel>
         <div className="score-line">
           <span className="value-large">
             <AnimatedNumber value={agent.score} from={agent.previous_score} />
@@ -47,9 +50,14 @@ export default function AgentCard({ agent, position, total }) {
         </div>
         <ScoreBar score={agent.score} band={agent.band} />
         <div className="band-row">
-          <Crossfade value={agent.band} render={(band) => <BandPill band={band} />} />
-          {agent.previous_band !== agent.band && (
-            <span className="muted-small">was {agent.previous_band}</span>
+          <Crossfade
+            value={agent.tier ?? agent.band}
+            render={(name) => (
+              <BandPill band={agent.tier ? tierBand(agent.tier, agent.band) : name} label={name} />
+            )}
+          />
+          {tierMoved && (
+            <span className="muted-small">was {agent.previous_tier ?? agent.previous_band}</span>
           )}
         </div>
         {(agent.risk_flags ?? []).length > 0 && (
@@ -68,7 +76,7 @@ export default function AgentCard({ agent, position, total }) {
       </div>
 
       <div>
-        <MicroLabel>Deposit upfront</MicroLabel>
+        <MicroLabel>Edits reviewed</MicroLabel>
         <div className="mono-value collateral-value">
           [<Crossfade value={agent.required_collateral_pct} render={(pct) => pct} />
           {collateralMoved ? ` / was ${agent.previous_required_collateral_pct}` : ""}]

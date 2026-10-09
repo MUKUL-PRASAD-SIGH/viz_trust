@@ -4,9 +4,9 @@ import { STATE_URL } from "../lib/api.js";
 export default function StatusBanner({ state, error }) {
   let message = null;
   if (error) {
-    message = `Can't reach the score service at ${STATE_URL} (${error}). Is it running? Retrying.`;
+    message = `Can't reach the engine at ${STATE_URL} (${error}). Is it running? Retrying every few seconds.`;
   } else if (state && state.source !== "stub" && !state.oracle_live) {
-    message = state.notice ?? "The oracle has stopped reporting. Showing the last known state.";
+    message = state.notice ?? "The engine has stopped reporting. Showing the last known state.";
   }
   if (!message) return null;
   return <div className="banner">{message}</div>;

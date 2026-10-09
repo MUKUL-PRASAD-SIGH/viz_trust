@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import Landing from "./pages/Landing.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import BlastRadius from "./pages/BlastRadius.jsx";
 import HowItWorks from "./pages/HowItWorks.jsx";
 import Docs from "./pages/Docs.jsx";
 import NotFound from "./pages/NotFound.jsx";
@@ -13,6 +14,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/blast-radius" element={<BlastRadius />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/docs" element={<Docs />} />
         <Route path="*" element={<NotFound />} />
