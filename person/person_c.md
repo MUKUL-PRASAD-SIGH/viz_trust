@@ -43,7 +43,7 @@ context, not whole files.
 - [ ] **Test Guardian (judgement):** was a test weakened? For example, an assertion removed, a test
       that can no longer fail, or an expected value changed to match a bug.
 - [ ] **Hardcode Hunter (judgement):** for values M's patterns flagged with low confidence, is this a
-      placeholder, test data or a real secret or config?
+      placeholder, test data or a real secret or config? A real secret is `critical`.
 - [ ] `review(edit)` runs the relevant checks for the edit, merges the results, drops findings with
       bad line citations, and sets `source: "gemma"`.
 

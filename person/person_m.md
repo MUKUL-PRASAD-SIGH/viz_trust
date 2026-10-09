@@ -31,7 +31,8 @@ patterns from it rather than starting fresh. Don't break `score/`: its 66 tests 
 - [ ] v0 scoring as a clear points table with a reason for every change. For example: clean edit
       approved +14, clean edit allowed +8, confirmed medium finding −30, confirmed high finding −60,
       broken caller −20, dismissed finding +2. Clamp to 0–1000, start at 500.
-- [ ] **Hard rule:** a confirmed secret leak resets the agent to probation (score capped at 550).
+- [ ] **Hard rule:** a `critical` `hardcode_hunter` finding resets the agent to probation (score capped at 550).
+- [ ] Unknown agents get 500 and probation, never a 404. Unknown fields are ignored.
 - [ ] **Anti-gaming:** gains are scaled by edit size and blast radius, so one-line edits barely count.
 - [ ] Tiers: trusted at 800+, standard at 600–799, probation below 600.
 - [ ] `top_factors` = the biggest point contributions, phrased like Aegis's reasons.
@@ -43,7 +44,7 @@ patterns from it rather than starting fresh. Don't break `score/`: its 66 tests 
   - Probation: hold everything.
   - Standard: hold if any high finding, otherwise allow.
   - Trusted: allow, but hold a high finding, and hold 1 in 5 edits at random for a spot check.
-  - Deny straight away on a high-severity secret, whatever the tier.
+  - Deny straight away on a `critical` secret, whatever the tier.
 - [ ] `GET /edits/{id}`, `POST /decisions`, `POST /findings/{id}/verdict`, each writing to the log.
 - [ ] Held edits time out after 120 s and count as denied.
 
@@ -55,7 +56,9 @@ patterns from it rather than starting fresh. Don't break `score/`: its 66 tests 
 - [ ] **Reality Check (exact part):** imports not in the repo, `requirements.txt` or
       `package.json`. Mark them as "not installed". C's Gemma check decides whether to flag them.
 - [ ] **Scope Guard (exact part):** edits to lockfiles, `.env`, or CI files the prompt didn't mention.
-- [ ] Every finding carries `file`, `line` and `evidence`.
+- [ ] Every finding carries `file`, `line`, `area` and `evidence`. A real secret is `critical`.
+- [ ] Map each file to an `area` by path rules (`auth`, `payments`, `migrations`, `api`, `ui`,
+      `tests`, `config`, `other`).
 
 ### 6. Call graph and blast radius: `engine/graph.py`
 - [ ] Parse Python files with the built-in `ast`: functions and methods as nodes, calls as edges.
