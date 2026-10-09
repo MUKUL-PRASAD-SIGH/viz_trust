@@ -344,3 +344,90 @@ def test_health_and_cors(client):
 def test_engine_works_with_ollama_stopped(client):
     """No Gemma anywhere on this path: the stub returns [] and everything still decides."""
     assert client.post("/edits", json=body(slack_edit())).json()["decision"] == "deny"
+
+
+# -- follow-ups: duplicate findings, Gemma time limit, warm-up --------------------------
+
+
+def _hardcode(source, severity, message, line):
+    return Finding(check="hardcode_hunter", severity=severity, source=source, file="app/signup.py",
+                   line=line, message=message)
+
+
+def test_same_line_flagged_by_pattern_and_gemma_is_reported_once(engine, monkeypatch):
+    """The Slack token line used to appear twice: once from the pattern, once from Gemma."""
+    def fake(edit, timeout_s=8.0):
+        return [_hardcode("gemma", "high", "hardcoded secret in source", 7)]
+    monkeypatch.setattr(gemma_checks, "review", fake)
+    result = engine.submit_edit(slack_edit())
+    on_token_line = [f for f in engine.state.findings.values()
+                     if f.check == "hardcode_hunter" and f.line == 7]
+    assert len(on_token_line) == 1 and on_token_line[0].source == "pattern"
+    assert len(result.finding_ids) == 2        # the token line, plus the unknown import
+
+
+def test_gemma_wins_a_shared_line_only_when_strictly_more_severe():
+    from engine.core import merge_findings
+    kept = merge_findings([_hardcode("pattern", "low", "Fixed port 8080", 3), _hardcode("gemma", "high", "real secret", 3)])
+    assert [(f.source, f.severity) for f in kept] == [("gemma", "high")]
+    kept = merge_findings([_hardcode("pattern", "medium", "m", 3), _hardcode("gemma", "medium", "g", 3)])
+    assert [f.source for f in kept] == ["pattern"]
+
+
+def test_findings_from_one_source_on_one_line_all_stay():
+    from engine.core import merge_findings
+    kept = merge_findings([_hardcode("pattern", "low", "Absolute local path", 3), _hardcode("pattern", "low", "Fixed port 8080", 3),
+                           _hardcode("pattern", "low", "Fixed port 8080", 3)])
+    assert [f.message for f in kept] == ["Absolute local path", "Fixed port 8080"]
+
+
+def test_engine_gives_gemma_twelve_seconds(engine, monkeypatch):
+    seen = []
+    monkeypatch.setattr(gemma_checks, "review", lambda edit, timeout_s=0: seen.append(timeout_s) or [])
+    engine.submit_edit(clean_signup_edit())
+    assert seen == [12.0]
+
+
+class _FakeClient:
+    def __init__(self, ready=True, boom=False):
+        self.calls, self.ready, self.boom = 0, ready, boom
+
+    def warm_up(self):
+        self.calls += 1
+        if self.boom:
+            raise RuntimeError("ollama exploded")
+        return self.ready
+
+
+def _wait_for(predicate, seconds=2.0):
+    import time
+    end = time.monotonic() + seconds
+    while time.monotonic() < end and not predicate():
+        time.sleep(0.02)
+    return predicate()
+
+
+@pytest.mark.parametrize("fake", [_FakeClient(), _FakeClient(ready=False), _FakeClient(boom=True)])
+def test_engine_warms_the_model_at_startup_and_survives_any_outcome(engine, fake):
+    gemma_checks.set_client(fake)
+    try:
+        with TestClient(create_app(engine, warm_up=True)) as client:
+            assert _wait_for(lambda: fake.calls == 1)
+            assert client.get("/health").json()["status"] == "ok"      # startup was not blocked or broken
+    finally:
+        gemma_checks.set_client(None)
+
+
+def test_warm_up_is_off_when_tests_inject_an_engine_and_when_disabled(engine, monkeypatch):
+    fake = _FakeClient()
+    gemma_checks.set_client(fake)
+    try:
+        with TestClient(create_app(engine)):                  # an injected engine: no warm-up
+            pass
+        monkeypatch.setenv("VIZ_TRUST_WARMUP", "0")
+        monkeypatch.setattr("engine.app.build_engine", lambda: engine)
+        with TestClient(create_app()):                        # the real path, switched off
+            pass
+        assert fake.calls == 0
+    finally:
+        gemma_checks.set_client(None)

@@ -38,6 +38,7 @@ from engine.state import State, iso
 log = logging.getLogger("engine")
 
 HOLD_TIMEOUT_S = 120.0
+GEMMA_TIMEOUT_S = 12.0  # was 8: a cold e4b on a 6 GB GPU needs the room (the hook waits up to 20 s)
 SPOT_CHECK_RATE = 0.2
 MAX_DIFF_CHARS = 4000
 MAX_FINDINGS_SHOWN = 100
@@ -68,6 +69,35 @@ def normalize_path(path: str) -> str:
     while path.startswith("./"):
         path = path[2:]
     return path
+
+
+SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}
+
+
+def merge_findings(findings: list[Finding]) -> list[Finding]:
+    """Drop the duplicate when a pattern check and Gemma flag the same thing.
+
+    Both often flag the same line, e.g. a Slack token: the pattern says "Slack token hardcoded",
+    Gemma says "hardcoded secret". For one (check, file, line) flagged by both, keep a single
+    finding: Gemma's only if it is strictly more severe, otherwise the pattern's (its message is
+    exact). Several findings from the same source on one line (a local path and a fixed port) all
+    stay. Order of first appearance is kept.
+    """
+    groups: dict[tuple[str, str, int], list[Finding]] = {}
+    for finding in findings:
+        groups.setdefault((finding.check, finding.file, finding.line), []).append(finding)
+
+    merged: list[Finding] = []
+    for group in groups.values():
+        pattern = [f for f in group if f.source == "pattern"]
+        gemma = [f for f in group if f.source != "pattern"]
+        if pattern and gemma:
+            best_pattern = min(SEVERITY_RANK[f.severity] for f in pattern)
+            best_gemma = min(gemma, key=lambda f: SEVERITY_RANK[f.severity])
+            merged.extend(pattern if best_pattern <= SEVERITY_RANK[best_gemma.severity] else [best_gemma])
+        else:
+            merged.extend({f.message: f for f in group}.values())  # exact repeats collapse
+    return merged
 
 
 def _hash(text: str) -> str:
@@ -169,18 +199,16 @@ class Engine:
         findings = run_patterns(edit, self.repo_root, diff)
 
         try:
-            extra = [f for f in gemma_checks.review(edit, timeout_s=8.0) if isinstance(f, Finding)]
+            extra = [f for f in gemma_checks.review(edit, timeout_s=GEMMA_TIMEOUT_S) if isinstance(f, Finding)]
         except Exception as exc:  # noqa: BLE001 -- the contract says review never raises; belt and braces
             log.warning("gemma review failed: %s", exc)
             extra = []
 
         analysis = analyze_edit(edit, load_sources(self.repo_root), diff)
-        seen, unique = set(), []
-        for finding in [*findings, *extra, *analysis.findings]:
-            key = (finding.check, finding.file, finding.line, finding.message)
-            if key not in seen:
-                seen.add(key)
-                unique.append(finding.model_copy(update={"evidence": redact(finding.evidence)[:200]}))
+        unique = [
+            f.model_copy(update={"evidence": redact(f.evidence)[:200]})
+            for f in merge_findings([*findings, *extra, *analysis.findings])
+        ]
         return unique, analysis.touched, analysis.blast
 
     def _decide(self, agent_id: str, findings: list[Finding]) -> tuple[str, str, str]:
