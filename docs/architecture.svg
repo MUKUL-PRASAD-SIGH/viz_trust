@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="790" viewBox="0 0 1280 790" role="img" aria-labelledby="t d">
+  <title id="t">AEGIS architecture</title>
+  <desc id="d">A hirer agent opens a job in AegisEscrow, which quotes the deposit from AegisRegistry. The worker delivers, the hirer accepts or disputes, the escrow settles and records the outcome in the registry. The oracle sees the outcome, asks the score service for a new score, and writes it back to the registry. The dashboard reads live state from the score service.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8a949c"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#27f293"/>
+    </marker>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#27f293" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#27f293" stop-opacity="0"/>
+    </linearGradient>
+    <style>
+      .sans { font-family: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif; }
+      .mono { font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, Menlo, monospace; }
+      .title { font-size: 26px; font-weight: 600; fill: #f2f4f5; }
+      .subtitle { font-size: 14px; fill: #8a949c; }
+      .lane { font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em; }
+      .box { fill: #121518; stroke: #262c31; stroke-width: 1.2; }
+      .box-chain { fill: #0f1714; stroke: #1f4b37; stroke-width: 1.2; }
+      .name { font-size: 17px; font-weight: 600; fill: #f2f4f5; }
+      .tag { font-size: 10.5px; letter-spacing: 0.08em; fill: #5f676e; }
+      .line { font-size: 13px; fill: #a4adb4; }
+      .flow { stroke: #5b646b; stroke-width: 1.6; fill: none; }
+      .flow-accent { stroke: #27f293; stroke-width: 1.6; fill: none; }
+      .label { font-size: 12px; fill: #c9d0d5; }
+      .step { font-size: 12px; font-weight: 700; fill: #27f293; }
+      .tier { fill: #121518; stroke: #262c31; stroke-width: 1.2; }
+      .tier-range { font-size: 13px; fill: #8a949c; }
+      .tier-pct { font-size: 30px; font-weight: 600; }
+      .caption { font-size: 13.5px; fill: #8a949c; }
+      .caption b { fill: #f2f4f5; font-weight: 600; }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1280" height="790" rx="18" fill="#0a0c0e"/>
+  <rect x="400" y="80" width="360" height="440" rx="14" fill="url(#glow)"/>
+
+  <!-- Heading -->
+  <text x="40" y="52" class="sans title">AEGIS <tspan fill="#5f676e">·</tspan> how one job moves money and credit</text>
+  <text x="1240" y="52" text-anchor="end" class="sans subtitle">credit layer for AI agents</text>
+
+  <!-- Lane headers -->
+  <circle cx="44" cy="100" r="4" fill="#7aa2ff"/>
+  <text x="56" y="104" class="sans lane" fill="#7aa2ff">AGENTS</text>
+  <circle cx="404" cy="100" r="4" fill="#27f293"/>
+  <text x="416" y="104" class="sans lane" fill="#27f293">ON-CHAIN · BASE SEPOLIA / ANVIL</text>
+  <circle cx="884" cy="100" r="4" fill="#ffb84d"/>
+  <text x="896" y="104" class="sans lane" fill="#ffb84d">OFF-CHAIN</text>
+
+  <!-- AGENTS lane -->
+  <rect x="40" y="130" width="250" height="100" rx="12" class="box"/>
+  <text x="60" y="160" class="sans name">Hirer agent</text>
+  <text x="60" y="185" class="sans line">Posts a $500 job. Its own</text>
+  <text x="60" y="205" class="sans line">score sets its deposit.</text>
+
+  <rect x="40" y="330" width="250" height="120" rx="12" class="box"/>
+  <text x="60" y="360" class="sans name">Worker agents</text>
+  <text x="60" y="386" class="sans line"><tspan fill="#27f293">HonestAgent</tspan> does the work</text>
+  <text x="60" y="408" class="sans line"><tspan fill="#ff7a7a">SloppyAgent</tspan> fakes it</text>
+  <text x="60" y="432" class="mono tag">WATCH THE CHAIN FOR JOBS</text>
+
+  <!-- ON-CHAIN lane -->
+  <rect x="400" y="130" width="360" height="140" rx="12" class="box-chain"/>
+  <text x="420" y="160" class="sans name">AegisEscrow</text>
+  <text x="740" y="160" text-anchor="end" class="mono tag">SMART CONTRACT</text>
+  <text x="420" y="187" class="sans line">Holds the hirer's USDC deposit.</text>
+  <text x="420" y="209" class="sans line">Accepted: pays the worker in full.</text>
+  <text x="420" y="231" class="sans line">Disputed: refunds the hirer.</text>
+  <text x="420" y="253" class="sans line">No human arbitrator.</text>
+
+  <rect x="400" y="360" width="360" height="140" rx="12" class="box-chain"/>
+  <text x="420" y="390" class="sans name">AegisRegistry</text>
+  <text x="740" y="390" text-anchor="end" class="mono tag">SMART CONTRACT</text>
+  <text x="420" y="417" class="sans line">A 0–1000 credit score per agent.</text>
+  <text x="420" y="439" class="sans line">Job counters and the deposit curve.</text>
+  <text x="420" y="461" class="sans line">Only the oracle may write scores.</text>
+  <text x="420" y="483" class="mono tag">PORTABLE: BELONGS TO THE ADDRESS</text>
+
+  <!-- OFF-CHAIN lane -->
+  <rect x="880" y="130" width="360" height="100" rx="12" class="box"/>
+  <text x="900" y="160" class="sans name">Oracle</text>
+  <text x="1220" y="160" text-anchor="end" class="mono tag">PYTHON · WEB3</text>
+  <text x="900" y="187" class="sans line">Watches every settled job and writes</text>
+  <text x="900" y="209" class="sans line">the new score back on-chain.</text>
+
+  <rect x="880" y="300" width="360" height="130" rx="12" class="box"/>
+  <text x="900" y="330" class="sans name">Score service</text>
+  <text x="1220" y="330" text-anchor="end" class="mono tag">FASTAPI · SCIKIT-LEARN</text>
+  <text x="900" y="357" class="sans line">Logistic model over 7 features.</text>
+  <text x="900" y="379" class="sans line">Returns a score + the 3 reasons behind it.</text>
+  <text x="900" y="401" class="sans line">Advisory risk flags (never change a score).</text>
+
+  <rect x="880" y="510" width="360" height="70" rx="12" class="box"/>
+  <text x="900" y="540" class="sans name">Live dashboard</text>
+  <text x="1220" y="540" text-anchor="end" class="mono tag">REACT · VITE</text>
+  <text x="900" y="563" class="sans line">Scores, deposits and activity, live.</text>
+
+  <!-- 1: open job (hirer to escrow) -->
+  <line x1="290" y1="160" x2="398" y2="160" class="flow-accent" marker-end="url(#arrow-accent)"/>
+  <text x="345" y="150" text-anchor="middle" class="sans"><tspan class="step">1</tspan><tspan class="label" dx="5">open job</tspan></text>
+
+  <!-- 2: collateral quote (registry to escrow) -->
+  <line x1="500" y1="358" x2="500" y2="272" class="flow" marker-end="url(#arrow)"/>
+  <text x="510" y="320" class="sans"><tspan class="step">2</tspan><tspan class="label" dx="5">quote deposit</tspan></text>
+
+  <!-- 3: deliver (worker to escrow) -->
+  <path d="M290 395 H345 V250 H398" class="flow" marker-end="url(#arrow)"/>
+  <text transform="translate(333 322) rotate(-90)" text-anchor="middle" class="sans"><tspan class="step">3</tspan><tspan class="label" dx="5">deliver</tspan></text>
+
+  <!-- 4: accept or dispute, settle (hirer to escrow) -->
+  <line x1="290" y1="205" x2="398" y2="205" class="flow" marker-end="url(#arrow)"/>
+  <text x="345" y="195" text-anchor="middle" class="sans"><tspan class="step">4</tspan><tspan class="label" dx="5">judge, settle</tspan></text>
+
+  <!-- 5: record outcome (escrow to registry) -->
+  <line x1="660" y1="272" x2="660" y2="358" class="flow-accent" marker-end="url(#arrow-accent)"/>
+  <text x="670" y="320" class="sans"><tspan class="step">5</tspan><tspan class="label" dx="5">outcome</tspan></text>
+
+  <!-- 6: oracle sees the outcome (registry to oracle) -->
+  <path d="M760 450 H840 V210 H878" class="flow-accent" marker-end="url(#arrow-accent)"/>
+  <text transform="translate(856 330) rotate(-90)" text-anchor="middle" class="sans"><tspan class="step">6</tspan><tspan class="label" dx="5">new outcome</tspan></text>
+
+  <!-- 7: oracle asks the model; 8: score + reasons back -->
+  <line x1="960" y1="232" x2="960" y2="298" class="flow" marker-end="url(#arrow)"/>
+  <text x="970" y="270" class="sans"><tspan class="step">7</tspan><tspan class="label" dx="5">job history</tspan></text>
+  <line x1="1160" y1="298" x2="1160" y2="232" class="flow" marker-end="url(#arrow)"/>
+  <text x="1150" y="270" text-anchor="end" class="sans"><tspan class="label">score + reasons</tspan></text>
+
+  <!-- 8: oracle writes the score (oracle to registry) -->
+  <path d="M880 170 H800 V390 H762" class="flow-accent" marker-end="url(#arrow-accent)"/>
+  <text transform="translate(816 285) rotate(-90)" text-anchor="middle" class="sans"><tspan class="step">8</tspan><tspan class="label" dx="5">updateScore</tspan></text>
+
+  <!-- 9: dashboard reads state -->
+  <line x1="1060" y1="432" x2="1060" y2="508" class="flow" marker-end="url(#arrow)"/>
+  <text x="1070" y="475" class="sans"><tspan class="step">9</tspan><tspan class="label" dx="5">live state, every 1.5s</tspan></text>
+
+  <!-- Collateral tiers -->
+  <text x="40" y="628" class="sans lane" fill="#8a949c">DEPOSIT A HIRER POSTS UPFRONT, BY ITS SCORE</text>
+
+  <rect x="40" y="644" width="291" height="84" rx="12" class="tier"/>
+  <text x="62" y="676" class="sans tier-range">score 800 – 1000</text>
+  <text x="62" y="712" class="sans tier-pct" fill="#27f293">20%</text>
+  <text x="309" y="712" text-anchor="end" class="mono tag">$100 ON $500</text>
+
+  <rect x="343" y="644" width="291" height="84" rx="12" class="tier"/>
+  <text x="365" y="676" class="sans tier-range">score 600 – 799</text>
+  <text x="365" y="712" class="sans tier-pct" fill="#9be8b8">40%</text>
+  <text x="612" y="712" text-anchor="end" class="mono tag">$200 ON $500</text>
+
+  <rect x="646" y="644" width="291" height="84" rx="12" class="tier"/>
+  <text x="668" y="676" class="sans tier-range">score 400 – 599</text>
+  <text x="668" y="712" class="sans tier-pct" fill="#ffb84d">70%</text>
+  <text x="915" y="712" text-anchor="end" class="mono tag">$350 ON $500</text>
+
+  <rect x="949" y="644" width="291" height="84" rx="12" class="tier"/>
+  <text x="971" y="676" class="sans tier-range">score below 400, or unknown</text>
+  <text x="971" y="712" class="sans tier-pct" fill="#ff5c5c">100%</text>
+  <text x="1218" y="712" text-anchor="end" class="mono tag">$500 ON $500</text>
+
+  <text x="40" y="764" class="sans caption">In the demo: <tspan fill="#f2f4f5">HonestAgent 864 → 871</tspan> after a clean job · <tspan fill="#f2f4f5">SloppyAgent 613 → 382</tspan> after one lost dispute, and its deposit jumps from 40% to 100%.</text>
+</svg>

@@ -1,0 +1,358 @@
+{
+  "source": "stub",
+  "notice": "STUB. Sample response for GET /agents/state, captured from the working local demo. Same shape as the live endpoint; swap the URL to http://127.0.0.1:8000/agents/state when the score service is running.",
+  "oracle_live": true,
+  "updated_at": "2026-09-18T19:20:20Z",
+  "chain_id": 31337,
+  "block": 127,
+  "agents": [
+    {
+      "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "name": "HonestAgent",
+      "score": 871,
+      "previous_score": 864,
+      "score_delta": 7,
+      "band": "excellent",
+      "previous_band": "excellent",
+      "required_collateral_bps": 2000,
+      "required_collateral_pct": "20%",
+      "previous_required_collateral_bps": 2000,
+      "previous_required_collateral_pct": "20%",
+      "top_factors": [
+        {
+          "feature": "account_age_days",
+          "value": 729.0,
+          "impact": 170,
+          "explanation": "Long-established account"
+        },
+        {
+          "feature": "on_time_payment_rate",
+          "value": 1.0,
+          "impact": 106,
+          "explanation": "Clean settlement almost without exception"
+        },
+        {
+          "feature": "dispute_rate",
+          "value": 0.0,
+          "impact": 56,
+          "explanation": "No disputes on record"
+        }
+      ],
+      "recent_events": [
+        {
+          "type": "job_completed",
+          "job_id": 1,
+          "value_usd": 500.0,
+          "reason": "completed job #21, clean settlement (+7); top factor: long-established account",
+          "delta": 7,
+          "timestamp": "2026-09-18T19:09:50Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 690.0,
+          "reason": "completed job #20, clean settlement (+6); top factor: long-established account",
+          "delta": 6,
+          "timestamp": "2026-09-18T19:09:11Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 250.0,
+          "reason": "completed job #19, clean settlement (+9); top factor: long-established account",
+          "delta": 9,
+          "timestamp": "2026-09-18T19:09:11Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 560.0,
+          "reason": "completed job #18, clean settlement (+7); top factor: long-established account",
+          "delta": 7,
+          "timestamp": "2026-09-18T19:09:10Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 390.0,
+          "reason": "completed job #17, clean settlement (+8); top factor: long-established account",
+          "delta": 8,
+          "timestamp": "2026-09-18T19:09:09Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 760.0,
+          "reason": "completed job #16, clean settlement (+5); top factor: long-established account",
+          "delta": 5,
+          "timestamp": "2026-09-18T19:09:09Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 450.0,
+          "reason": "completed job #15, clean settlement (+7); top factor: long-established account",
+          "delta": 7,
+          "timestamp": "2026-09-18T19:09:08Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 640.0,
+          "reason": "completed job #14, clean settlement (+6); top factor: long-established account",
+          "delta": 6,
+          "timestamp": "2026-09-18T19:09:08Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 280.0,
+          "reason": "completed job #13, clean settlement (+10); top factor: long-established account",
+          "delta": 10,
+          "timestamp": "2026-09-18T19:09:07Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 500.0,
+          "reason": "completed job #12, clean settlement (+7); top factor: long-established account",
+          "delta": 7,
+          "timestamp": "2026-09-18T19:09:06Z"
+        }
+      ],
+      "risk_flags": []
+    },
+    {
+      "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "name": "SloppyAgent",
+      "score": 382,
+      "previous_score": 613,
+      "score_delta": -231,
+      "band": "poor",
+      "previous_band": "good",
+      "required_collateral_bps": 10000,
+      "required_collateral_pct": "100%",
+      "previous_required_collateral_bps": 4000,
+      "previous_required_collateral_pct": "40%",
+      "top_factors": [
+        {
+          "feature": "prior_defaults",
+          "value": 1.0,
+          "impact": -86,
+          "explanation": "More prior defaults than peers"
+        },
+        {
+          "feature": "account_age_days",
+          "value": 379.0,
+          "impact": 59,
+          "explanation": "Long-established account"
+        },
+        {
+          "feature": "avg_job_value_usd",
+          "value": 521.875,
+          "impact": -51,
+          "explanation": "Handles jobs far larger than peers"
+        }
+      ],
+      "recent_events": [
+        {
+          "type": "dispute_lost",
+          "job_id": 2,
+          "value_usd": 500.0,
+          "reason": "lost dispute on $500 job (-231); top factor: more prior defaults than peers",
+          "delta": -231,
+          "timestamp": "2026-09-18T19:09:54Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 640.0,
+          "reason": "completed job #15, clean settlement (+13); top factor: long-established account",
+          "delta": 13,
+          "timestamp": "2026-09-18T19:09:11Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 280.0,
+          "reason": "completed job #14, clean settlement (+18); top factor: long-established account",
+          "delta": 18,
+          "timestamp": "2026-09-18T19:09:11Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 500.0,
+          "reason": "completed job #13, clean settlement (+17); top factor: long-established account",
+          "delta": 17,
+          "timestamp": "2026-09-18T19:09:10Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 810.0,
+          "reason": "completed job #12, clean settlement (+16); top factor: long-established account",
+          "delta": 16,
+          "timestamp": "2026-09-18T19:09:10Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 360.0,
+          "reason": "completed job #11, clean settlement (+23); top factor: long-established account",
+          "delta": 23,
+          "timestamp": "2026-09-18T19:09:10Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 590.0,
+          "reason": "completed job #10, clean settlement (+24); top factor: long-established account",
+          "delta": 24,
+          "timestamp": "2026-09-18T19:09:09Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 470.0,
+          "reason": "completed job #9, clean settlement (+29); top factor: long-established account",
+          "delta": 29,
+          "timestamp": "2026-09-18T19:09:09Z"
+        },
+        {
+          "type": "dispute_won",
+          "job_id": null,
+          "value_usd": 450.0,
+          "reason": "won dispute on $450 job (-189); top factor: long-established account",
+          "delta": -189,
+          "timestamp": "2026-09-18T19:09:08Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 720.0,
+          "reason": "completed job #7, clean settlement (+3); top factor: clean settlement almost without exception",
+          "delta": 3,
+          "timestamp": "2026-09-18T19:09:08Z"
+        }
+      ],
+      "risk_flags": []
+    },
+    {
+      "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "name": "Hirer",
+      "score": 877,
+      "previous_score": 871,
+      "score_delta": 6,
+      "band": "excellent",
+      "previous_band": "excellent",
+      "required_collateral_bps": 2000,
+      "required_collateral_pct": "20%",
+      "previous_required_collateral_bps": 2000,
+      "previous_required_collateral_pct": "20%",
+      "top_factors": [
+        {
+          "feature": "account_age_days",
+          "value": 729.0,
+          "impact": 170,
+          "explanation": "Long-established account"
+        },
+        {
+          "feature": "on_time_payment_rate",
+          "value": 1.0,
+          "impact": 106,
+          "explanation": "Clean settlement almost without exception"
+        },
+        {
+          "feature": "dispute_rate",
+          "value": 0.0,
+          "impact": 56,
+          "explanation": "No disputes on record"
+        }
+      ],
+      "recent_events": [
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 650.0,
+          "reason": "completed job #22, clean settlement (+6); top factor: long-established account",
+          "delta": 6,
+          "timestamp": "2026-09-18T19:09:11Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 420.0,
+          "reason": "completed job #21, clean settlement (+7); top factor: long-established account",
+          "delta": 7,
+          "timestamp": "2026-09-18T19:09:11Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 690.0,
+          "reason": "completed job #20, clean settlement (+6); top factor: long-established account",
+          "delta": 6,
+          "timestamp": "2026-09-18T19:09:10Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 250.0,
+          "reason": "completed job #19, clean settlement (+9); top factor: long-established account",
+          "delta": 9,
+          "timestamp": "2026-09-18T19:09:10Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 560.0,
+          "reason": "completed job #18, clean settlement (+7); top factor: long-established account",
+          "delta": 7,
+          "timestamp": "2026-09-18T19:09:09Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 390.0,
+          "reason": "completed job #17, clean settlement (+8); top factor: long-established account",
+          "delta": 8,
+          "timestamp": "2026-09-18T19:09:08Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 760.0,
+          "reason": "completed job #16, clean settlement (+5); top factor: long-established account",
+          "delta": 5,
+          "timestamp": "2026-09-18T19:09:08Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 450.0,
+          "reason": "completed job #15, clean settlement (+7); top factor: long-established account",
+          "delta": 7,
+          "timestamp": "2026-09-18T19:09:07Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 640.0,
+          "reason": "completed job #14, clean settlement (+6); top factor: long-established account",
+          "delta": 6,
+          "timestamp": "2026-09-18T19:09:07Z"
+        },
+        {
+          "type": "job_completed",
+          "job_id": null,
+          "value_usd": 280.0,
+          "reason": "completed job #13, clean settlement (+10); top factor: long-established account",
+          "delta": 10,
+          "timestamp": "2026-09-18T19:09:06Z"
+        }
+      ],
+      "risk_flags": []
+    }
+  ]
+}

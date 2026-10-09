@@ -1,0 +1,33 @@
+# Render Blueprint: the public, read-only side of AEGIS.
+#   aegis-api  score service in chain mode: reads the Base Sepolia Registry, serves /agents/state
+#   aegis-web  the website; its dashboard reads aegis-api
+# The live demo (Anvil, oracle, agents) runs locally with scripts/demo.ps1 and is not deployed.
+services:
+  - type: web
+    name: aegis-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r score/requirements.txt
+    startCommand: cd score && uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.10
+      - key: AEGIS_STATE_CHAIN
+        value: base-sepolia
+
+  - type: web
+    name: aegis-web
+    runtime: static
+    buildCommand: cd web && npm ci && npm run build
+    staticPublishPath: web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE
+        fromService:
+          type: web
+          name: aegis-api
+          property: host
