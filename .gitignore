@@ -25,3 +25,6 @@ deployments/local.json
 
 # Internal prep notes, shared privately, never committed
 docs/PITCH_AND_QA.md
+
+# Engine event log, regenerated on first run
+engine/data/
