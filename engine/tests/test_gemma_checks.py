@@ -31,8 +31,7 @@ AFTER = (
 
 
 def make_edit(**overrides) -> Edit:
-    fields = dict(edit_id="e1", agent="demo", prompt="Add Slack notifications", file="app/signup.py",
-                  before=BEFORE, after=AFTER, area="auth")
+    fields = dict(agent="demo", prompt="Add Slack notifications", file="app/signup.py", before=BEFORE, after=AFTER)
     fields.update(overrides)
     return Edit(**fields)
 
@@ -135,12 +134,13 @@ def test_review_never_raises_on_a_bug(monkeypatch):
     assert gemma_checks.review(make_edit()) == []
 
 
-def test_secret_is_critical_and_redacted():
+def test_secret_is_high_and_redacted():
+    # High + hardcode_hunter is what the engine treats as a secret leak (deny, back to probation).
     use(fake_ollama({"HardcodeReply": {"items": [
         {"line": 6, "kind": "real_secret", "reason": "the value 'xox" + "b-2918374651-1928374650-aB3dE5fG7hJ9kL1mN3pQ5rS7' is a Slack bot token", "fix": "Use an env var."},
     ]}}))
     [finding] = [f for f in gemma_checks.review(make_edit()) if f.check == "hardcode_hunter"]
-    assert finding.severity == "critical" and finding.line == 6 and finding.source == "gemma"
+    assert finding.severity == "high" and finding.line == 6 and finding.source == "gemma"
     assert "aB3dE5" not in finding.evidence and "xoxb" in finding.evidence
     assert "aB3dE5" not in finding.message  # the model quoted the secret; we don't repeat it
     assert finding.fix_prompt == "Use an env var."
@@ -180,13 +180,12 @@ def test_real_alias_confirmed_by_index_is_not_reported():
     assert not [f for f in gemma_checks.review(make_edit()) if f.check == "reality_check"]
 
 
-def test_local_modules_are_never_looked_up(monkeypatch):
+def test_the_repos_own_package_is_never_looked_up(monkeypatch):
     looked_up = []
     monkeypatch.setattr(packages, "exists_on_index", lambda name, language: looked_up.append(name))
     use(fake_ollama({}))
-    edit = make_edit(after="from app.db import save_user\nfrom helpers import x\n", local_modules=["helpers"])
-    gemma_checks.review(edit)
-    assert "app" not in looked_up and "helpers" not in looked_up
+    gemma_checks.review(make_edit(after="from app.db import save_user\nfrom app.models import User\nimport requests\n"))
+    assert "app" not in looked_up and "requests" in looked_up
 
 
 def test_scope_guard_does_not_repeat_a_line_another_check_reported():
@@ -222,13 +221,13 @@ def test_test_guardian_only_runs_on_test_files():
     assert "GuardianReply" in seen
 
 
-def test_finding_ids_are_unique_per_edit():
+def test_ids_are_left_for_the_engine():
     use(fake_ollama({"HardcodeReply": {"items": [
         {"line": 6, "kind": "real_secret", "reason": "a", "fix": "b"},
         {"line": 7, "kind": "placeholder_data", "reason": "a", "fix": "b"},
     ]}}))
-    ids = [f.id for f in gemma_checks.review(make_edit())]
-    assert len(ids) == len(set(ids)) and all(i.startswith("g_e1_") for i in ids)
+    findings = [f for f in gemma_checks.review(make_edit()) if f.check == "hardcode_hunter"]
+    assert len(findings) == 2 and all(f.id == "" and f.edit_id == "" for f in findings)
 
 
 # ---------------------------------------------------------------- rules added after the first evaluation

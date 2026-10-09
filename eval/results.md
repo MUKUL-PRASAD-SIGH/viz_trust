@@ -15,5 +15,5 @@ Cases are in `eval/cases/`. Impact Analyst isn't here: it has no model call (see
 - **Clean edits with any finding (false alarms):** 0.11
 - **Clean edits that would be held (false blocks):** 0.00
 - **Injection cases fully caught:** 1.00
-- **Latency per edit:** p50 4001 ms, p95 7489 ms, max 7926 ms
+- **Latency per edit:** p50 3947 ms, p95 7556 ms, max 7783 ms
 - **Model calls:** 53, failed 0

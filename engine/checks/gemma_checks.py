@@ -67,9 +67,11 @@ _PLACEHOLDERS = {"", "n/a", "na", "none", "null", "-", "unknown"}
 
 _TEST_PATH = re.compile(r"(^|/)(tests?|__tests__|spec)/|(^|/)test_[^/]*$|_test\.\w+$|\.(test|spec)\.\w+$")
 
+# The engine treats any high-severity Hardcode Hunter finding as a secret leak: the edit is denied
+# and the agent drops to probation (engine/scoring.py, is_secret_leak). So only real secrets are high.
 HARDCODE_SEVERITY = {
-    "real_secret": "critical",
-    "credential_in_url": "critical",
+    "real_secret": "high",
+    "credential_in_url": "high",
     "local_path": "medium",
     "fixed_port_or_host": "medium",
     "placeholder_data": "low",
@@ -93,12 +95,12 @@ def review(edit: Edit, timeout_s: float = DEFAULT_TIMEOUT_S) -> list[Finding]:
         for check in checks:
             remaining = deadline - time.monotonic()
             if remaining < MIN_CALL_BUDGET_S:
-                log.warning("edit %s: deadline reached before %s", edit.edit_id, check.__name__)
+                log.warning("%s: deadline reached before %s", edit.file, check.__name__)
                 break
             findings.extend(check(edit, changes, remaining))
     except Exception:  # noqa: BLE001 -- rule 5: a bug here must never block an edit
-        log.exception("edit %s: gemma review failed", edit.edit_id)
-    return _number(_dedupe(_drop_scope_overlap(findings)), edit.edit_id)
+        log.exception("%s: gemma review failed", edit.file)
+    return _dedupe(_drop_scope_overlap(findings))
 
 
 # ---------------------------------------------------------------- checks
@@ -132,8 +134,8 @@ def _hardcode_hunter(edit: Edit, changes: ChangedLines, budget: float) -> list[F
             _finding(
                 edit, "hardcode_hunter", severity, item.line,
                 message=_redact(f"{item.kind.replace('_', ' ').capitalize()}: {item.reason}")
-                if severity == "critical" else f"{item.kind.replace('_', ' ').capitalize()}: {item.reason}",
-                evidence=_redact(candidates[item.line].strip()) if severity == "critical" else candidates[item.line].strip(),
+                if severity == "high" else f"{item.kind.replace('_', ' ').capitalize()}: {item.reason}",
+                evidence=_redact(candidates[item.line].strip()) if severity == "high" else candidates[item.line].strip(),
                 fix=_clean(item.fix),
             )
         )
@@ -142,7 +144,8 @@ def _hardcode_hunter(edit: Edit, changes: ChangedLines, budget: float) -> list[F
 
 def _reality_check(edit: Edit, changes: ChangedLines, budget: float) -> list[Finding]:
     language = packages.language_of(edit.file)
-    local = set(edit.local_modules) | {edit.file.split("/")[0]}
+    # Imports of the repo's own package (app/signup.py importing app.db) are never looked up.
+    local = {edit.file.split("/")[0]}
     first_line: dict[str, int] = {}
     for number, text in sorted(changes.added.items()):
         for name in packages.imports_in_line(text, language):
@@ -269,15 +272,12 @@ def _scope_guard(edit: Edit, changes: ChangedLines, budget: float) -> list[Findi
 
 
 def _finding(edit: Edit, check, severity, line, *, message, evidence, fix) -> Finding:
-    return Finding(
-        id="",  # numbered in _number
-        edit_id=edit.edit_id,
+    return Finding(  # id and edit_id are left empty: the engine assigns them when it stores the finding
         check=check,
         severity=severity,
         source="gemma",
         file=edit.file,
         line=line,
-        area=edit.area,
         message=message[:300],
         evidence=evidence[:200],
         fix_prompt=fix[:300],
@@ -308,9 +308,6 @@ def _dedupe(findings: list[Finding]) -> list[Finding]:
             unique.append(finding)
     return unique
 
-
-def _number(findings: list[Finding], edit_id: str) -> list[Finding]:
-    return [f.model_copy(update={"id": f"g_{edit_id}_{i + 1}"}) for i, f in enumerate(findings)]
 
 
 def _redact(text: str) -> str:

@@ -1,8 +1,8 @@
-"""Shared engine types. They match the contract in person/README.md exactly.
+"""Shared types for the engine. Owned by Person M; the JSON they produce is the contract in
+person/README.md ("The shared contract"). Change that file first, then this one.
 
-Person M owns this file and extends it with the agent, graph and state models. Person C started it
-with only `Edit` and `Finding`, the two types the Gemma checks need, so the checks could be built
-before the engine exists. Change the contract first, then this file.
+`Finding.id` and `Finding.edit_id` default to "" so a check (pattern or Gemma) can build a
+finding without knowing either; the engine fills them in when it stores the finding.
 """
 
 from __future__ import annotations
@@ -11,46 +11,178 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+Tier = Literal["probation", "standard", "trusted"]
+Severity = Literal["high", "medium", "low"]
 Check = Literal["reality_check", "hardcode_hunter", "scope_guard", "test_guardian", "impact_analyst"]
-Severity = Literal["low", "medium", "high", "critical"]
-Source = Literal["pattern", "gemma"]
-Area = Literal["auth", "payments", "migrations", "api", "ui", "tests", "config", "other"]
-FindingStatus = Literal["open", "confirmed", "dismissed"]
+Decision = Literal["allow", "hold", "deny"]
+EventType = Literal[
+    "edit_clean", "edit_held", "edit_blocked", "finding_confirmed", "finding_dismissed", "tier_changed"
+]
 
 
 class Edit(BaseModel):
-    """One proposed edit to one file, as it arrives at POST /edits."""
+    """Body of POST /edits."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
-    edit_id: str
-    agent: str
-    model: str = "unknown"
-    prompt: str = ""  # the user's task, which Scope Guard judges the edit against
-    file: str
-    before: str = ""  # whole file before the edit; empty for a new file
-    after: str = ""  # whole file after the edit; empty for a deleted file
-    area: Area = "other"
-    # Top-level module names that belong to the repo itself, so Reality Check doesn't look them up
-    # on PyPI or npm. Optional; the engine fills it from the call graph.
-    local_modules: list[str] = Field(default_factory=list)
+    agent: str = Field(..., min_length=1)
+    model: str = ""
+    prompt: str = ""
+    file: str = Field(..., min_length=1, description="Path relative to the repo root, posix slashes.")
+    before: str = ""
+    after: str = ""
 
 
 class Finding(BaseModel):
-    """One problem found in an edit, with the line it cites as evidence."""
+    model_config = ConfigDict(extra="forbid")
 
-    model_config = ConfigDict(extra="ignore")
-
-    id: str
-    edit_id: str
+    id: str = ""
+    edit_id: str = ""
     check: Check
     severity: Severity
-    source: Source
+    source: Literal["pattern", "gemma"] = "pattern"
     file: str
-    line: int = Field(..., ge=1)
-    area: Area = "other"
+    line: int
     message: str
-    evidence: str
-    status: FindingStatus = "open"
-    # Optional, added by the Gemma checks: a prompt the user can hand back to the coding agent.
+    evidence: str = ""
+    status: Literal["open", "confirmed", "dismissed"] = "open"
+    # Gemma findings only: a prompt the user can hand back to the coding agent (the "Fix it" button).
     fix_prompt: str = ""
+
+
+class EditResult(BaseModel):
+    """Reply to POST /edits."""
+
+    edit_id: str
+    decision: Decision
+    finding_ids: list[str]
+
+
+class EditStatus(BaseModel):
+    """Reply to GET /edits/{id}. The hook polls `decision` while an edit is held."""
+
+    edit_id: str
+    decision: Decision
+
+
+class DecisionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    edit_id: str
+    decision: Literal["approve", "deny"]
+
+
+class VerdictRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    verdict: Literal["confirm", "dismiss"]
+
+
+# ---------------------------------------------------------------------------
+# GET /agents/state. Same fields as score/app.py's AgentsStateResponse so AgentCard,
+# ActivityFeed, LiveStatus and StatusBanner keep working, plus the contract's new fields.
+# ---------------------------------------------------------------------------
+
+
+class Factor(BaseModel):
+    feature: str
+    value: float
+    impact: int
+    explanation: str
+
+
+class AgentEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    type: EventType
+    job_id: int | None = Field(..., description="Sequence number of the edit; null if none.")
+    value_usd: float = 0.0
+    reason: str
+    delta: int
+    timestamp: str
+
+
+class RiskFlag(BaseModel):
+    kind: str
+    level: Literal["watch", "alert"]
+    label: str
+    reason: str
+
+
+class AgentState(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    address: str
+    name: str
+    model: str
+    tier: Tier
+    score: int
+    previous_score: int
+    score_delta: int
+    band: str
+    previous_band: str
+    required_collateral_bps: int
+    required_collateral_pct: str
+    previous_required_collateral_bps: int
+    previous_required_collateral_pct: str
+    top_factors: list[Factor]
+    recent_events: list[AgentEvent]
+    risk_flags: list[RiskFlag] = Field(default_factory=list)
+
+
+class GraphNode(BaseModel):
+    id: str
+    file: str
+    label: str
+    heat: float
+    last_agent: str | None
+
+
+class GraphEdge(BaseModel):
+    source: str
+    target: str
+
+
+class LastEdit(BaseModel):
+    edit_id: str
+    touched: list[str]
+    blast: list[str]
+
+
+class Graph(BaseModel):
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+    last_edit: LastEdit | None
+
+
+class Pending(BaseModel):
+    edit_id: str
+    agent: str
+    file: str
+    added: int
+    removed: int
+    diff: str
+    reason: str
+    blast_count: int
+    finding_ids: list[str]
+
+
+class AgentsStateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: Literal["engine"] = "engine"
+    notice: str | None = None
+    oracle_live: bool = True
+    updated_at: str | None
+    chain_id: int | None = None
+    block: int | None = None
+    agents: list[AgentState]
+    graph: Graph
+    findings: list[Finding]
+    pending: list[Pending]
+
+
+class HealthResponse(BaseModel):
+    status: str
+    agents: int
+    events: int
